@@ -20,7 +20,7 @@ class SidebarProvider {
       localResourceRoots: [this.context.extensionUri],
     };
 
-    webviewView.webview.html = this.getHtmlForWebview();
+    webviewView.webview.html = this.getHtmlForWebview(webviewView.webview);
     this.webview = webviewView.webview;
 
     // Listen for messages from the webview
@@ -36,7 +36,13 @@ class SidebarProvider {
     });
   }
 
-  getHtmlForWebview() {
+  getHtmlForWebview(webview) {
+	const startIconUri = webview.asWebviewUri(
+        vscode.Uri.joinPath(this.context.extensionUri, 'media', 'start.svg')
+    );
+	const pauseIconUri = webview.asWebviewUri(
+        vscode.Uri.joinPath(this.context.extensionUri, 'media', 'pause.svg')
+    );
     return `
         <!DOCTYPE html>
         <html lang="en">
@@ -63,10 +69,14 @@ class SidebarProvider {
                 button:hover {
                     background-color: var(--vscode-button-hoverBackground);
                 }
+				img {
+					width: 16px;
+					height: 16px;
+				}
             </style>
         </head>
         <body>
-            <button id="startBtn">start</button>
+            <button id="startBtn"><img src="${startIconUri}" alt="Start"></button>
             <div id="content">
                 <p>Click the Start button to load content...</p>
             </div>
@@ -77,7 +87,7 @@ class SidebarProvider {
               
               startBtn.addEventListener('click', () => {
                   isPaused = !isPaused;
-                  startBtn.textContent = isPaused ? 'Continue' : 'Pause';
+                  startBtn.innerHTML = isPaused ? \`<img src="${startIconUri}" alt="Start">\` : \`<img src="${pauseIconUri}" alt="Pause">\`;
                   vscode.postMessage({ 
                       command: isPaused ? 'pause' : 'continue' 
                   });
