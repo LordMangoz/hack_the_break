@@ -1,36 +1,28 @@
-// The module 'vscode' contains the VS Code extensibility API
-// Import the module and reference it with the alias vscode in your code below
-const vscode = require('vscode');
+const vscode = require("vscode");
+const validator = require("./backend-functions/validator");
 
-// This method is called when your extension is activated
-// Your extension is activated the very first time the command is executed
+// This method is called when your extension is activated. Your extension is activated the very first time the command is executed
 
-/**
- * @param {vscode.ExtensionContext} context
- */
 function activate(context) {
+  console.log("Extention ran");
 
-	// Use the console to output diagnostic information (console.log) and errors (console.error)
-	// This line of code will only be executed once when your extension is activated
-	console.log('Congratulations, your extension "validalligator" is now active!');
+  const disposable = vscode.commands.registerCommand(
+    "validalligator.helloWorld",
+    function () {
+      vscode.window.showInformationMessage("Hello World from ValidAlligator!");
+    },
+  );
+  context.subscriptions.push(disposable);
 
-	// The command has been defined in the package.json file
-	// Now provide the implementation of the command with  registerCommand
-	// The commandId parameter must match the command field in package.json
-	const disposable = vscode.commands.registerCommand('validalligator.helloWorld', function () {
-		// The code you place here will be executed every time your command is executed
+  validator.html_validator();
 
-		// Display a message box to the user
-		vscode.window.showInformationMessage('Hello World from ValidAlligator!');
-	});
-
-	context.subscriptions.push(disposable);
+  // context menu :for making the context menu work. have an option for activiate/deactive extention
 }
 
 // This method is called when your extension is deactivated
 function deactivate() {}
 
 module.exports = {
-	activate,
-	deactivate
-}
+  activate,
+  deactivate,
+};
