@@ -9,7 +9,10 @@ async function getAIResponse(prompt) {
     });
 
     return response.text;
+    
 }
 module.exports = {
     getAIResponse,
 };
+
+
