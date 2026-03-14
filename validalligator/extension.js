@@ -30,7 +30,7 @@ class SidebarProvider {
         this.updateContent(textContent);
       }
       if (message.command === "continue") {
-        const textContent = `<h2>Resumed</h2><p>Session resumed!</p>`;
+        const textContent = `<h2>Resumed</h2><p>Session resumed!</p> \n <p>Here is some new content after resuming...</p>`;
         this.updateContent(textContent);
       }
     });
@@ -121,6 +121,10 @@ class SidebarProvider {
  */
 function activate(context) {
   console.log("ValidAlligator is now active!");
+
+  vscode.commands.registerCommand("validalligator.AItoggle", function () {
+	vscode.window.showInformationMessage("AI suggestions toggled!");
+  });
 
   // Register sidebar provider
   sidebarProvider = new SidebarProvider(context);

@@ -36,10 +36,22 @@
         }
       ]
     },
+    "menus": {
+      "view/title": [
+        {
+          "command": "validalligator.AItoggle",
+          "group": "navigation"
+        }
+      ]
+    },
     "commands": [
       {
         "command": "validalligator.helloWorld",
         "title": "Hello World"
+      },
+      {
+        "command": "validalligator.AItoggle",
+        "title": "Toggle AI Suggestions"
       }
     ]
   },
