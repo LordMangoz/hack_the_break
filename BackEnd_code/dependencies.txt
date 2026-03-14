@@ -1,0 +1,8 @@
+Dependencies for backend list here.
+-npm version:
+npm install -g npm@11.11.1
+
+
+-this was the generator for the template
+npm install -g yo generator-code
+

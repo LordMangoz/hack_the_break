@@ -1,9 +1,7 @@
-// The module 'vscode' contains the VS Code extensibility API
-// Import the module and reference it with the alias vscode in your code below
 const vscode = require("vscode");
+const validator = require("./backend-functions/validator");
 
-// This method is called when your extension is activated
-// Your extension is activated the very first time the command is executed
+// This method is called when your extension is activated. Your extension is activated the very first time the command is executed
 
 let sidebarProvider;
 
@@ -116,22 +114,30 @@ class SidebarProvider {
   }
 }
 
-/**
- * @param {vscode.ExtensionContext} context
- */
+
 function activate(context) {
-  console.log("ValidAlligator is now active!");
-
-  vscode.commands.registerCommand("validalligator.AItoggle", function () {
-	vscode.window.showInformationMessage("AI suggestions toggled!");
+	console.log("ValidAlligator is now active!");
+	vscode.commands.registerCommand("validalligator.AItoggle", function () { 
+		vscode.window.showInformationMessage("AI suggestions toggled!");
+	});
+	sidebarProvider = new SidebarProvider(context);
+	context.subscriptions.push(
+		vscode.window.registerWebviewViewProvider("myVew", sidebarProvider),
+	);
+	vscode.window.showInformationMessage("activated");
 	
-  });
+	const disposable = vscode.commands.registerCommand( "validalligator.helloWorld", function () {
+      vscode.window.showInformationMessage("Hello World from ValidAlligator!");
+	});
+	
+	context.subscriptions.push(disposable);
+	console.log("a");
+	validator.html_validator();
+	vscode.workspace.onDidChangeTextDocument(() => {
+		validator.html_validator();
+  	});
 
-  // Register sidebar provider
-  sidebarProvider = new SidebarProvider(context);
-  context.subscriptions.push(
-    vscode.window.registerWebviewViewProvider("myVew", sidebarProvider),
-  );
+  // context menu :for making the context menu work. have an option for activiate/deactive extention
 }
 
 // This method is called when your extension is deactivated
