@@ -124,6 +124,7 @@ function activate(context) {
 
   vscode.commands.registerCommand("validalligator.AItoggle", function () {
 	vscode.window.showInformationMessage("AI suggestions toggled!");
+	
   });
 
   // Register sidebar provider

@@ -1,0 +1,15 @@
+async function getAIResponse(prompt) {
+    const { GoogleGenAI } = await import("@google/genai");
+    
+    const ai = new GoogleGenAI({apiKey: process.env.API_KEY});
+
+    const response = await ai.models.generateContent({
+        model: "gemini-2.0-flash",
+        contents: prompt,
+    });
+
+    return response.text;
+}
+module.exports = {
+    getAIResponse,
+};
