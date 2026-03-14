@@ -66,7 +66,7 @@ class SidebarProvider {
             </style>
         </head>
         <body>
-            <button id="startBtn">start</button>
+            <button id="startBtn">Start</button>
             <div id="content">
                 <p>Click the Start button to load content...</p>
             </div>
