@@ -36,10 +36,22 @@
         }
       ]
     },
+    "menus": {
+      "view/title": [
+        {
+          "command": "validalligator.AItoggle",
+          "group": "navigation"
+        }
+      ]
+    },
     "commands": [
       {
         "command": "validalligator.helloWorld",
         "title": "Hello World"
+      },
+      {
+        "command": "validalligator.AItoggle",
+        "title": "Toggle AI Suggestions"
       }
     ]
   },
@@ -49,11 +61,15 @@
     "test": "vscode-test"
   },
   "devDependencies": {
-    "@types/vscode": "^1.110.0",
     "@types/mocha": "^10.0.10",
     "@types/node": "22.x",
-    "eslint": "^9.39.3",
-    "@vscode/test-cli": "^0.0.12",
-    "@vscode/test-electron": "^2.5.2"
+    "@types/vscode": "^1.110.0",
+    "@vscode/test-cli": "^0.0.11",
+    "@vscode/test-electron": "^2.5.2",
+    "eslint": "^9.39.3"
+  },
+  "dependencies": {
+    "@google/genai": "^1.45.0",
+    "dotenv": "^17.3.1"
   }
 }

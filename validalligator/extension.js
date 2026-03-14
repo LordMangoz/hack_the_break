@@ -1,9 +1,7 @@
-// The module 'vscode' contains the VS Code extensibility API
-// Import the module and reference it with the alias vscode in your code below
 const vscode = require("vscode");
+const validator = require("./backend-functions/validator");
 
-// This method is called when your extension is activated
-// Your extension is activated the very first time the command is executed
+// This method is called when your extension is activated. Your extension is activated the very first time the command is executed
 
 let sidebarProvider;
 
@@ -20,7 +18,7 @@ class SidebarProvider {
       localResourceRoots: [this.context.extensionUri],
     };
 
-    webviewView.webview.html = this.getHtmlForWebview();
+    webviewView.webview.html = this.getHtmlForWebview(webviewView.webview);
     this.webview = webviewView.webview;
 
     // Listen for messages from the webview
@@ -30,13 +28,19 @@ class SidebarProvider {
         this.updateContent(textContent);
       }
       if (message.command === "continue") {
-        const textContent = `<h2>Resumed</h2><p>Session resumed!</p>`;
+        const textContent = `<h2>Resumed</h2><p>Session resumed!</p> \n <p>Here is some new content after resuming...</p>`;
         this.updateContent(textContent);
       }
     });
   }
 
-  getHtmlForWebview() {
+  getHtmlForWebview(webview) {
+    const startIconUri = webview.asWebviewUri(
+      vscode.Uri.joinPath(this.context.extensionUri, "media", "start.svg"),
+    );
+    const pauseIconUri = webview.asWebviewUri(
+      vscode.Uri.joinPath(this.context.extensionUri, "media", "pause.svg"),
+    );
     return `
         <!DOCTYPE html>
         <html lang="en">
@@ -63,10 +67,14 @@ class SidebarProvider {
                 button:hover {
                     background-color: var(--vscode-button-hoverBackground);
                 }
+				img {
+					width: 16px;
+					height: 16px;
+				}
             </style>
         </head>
         <body>
-            <button id="startBtn">Start</button>
+            <button id="startBtn"><img src="${startIconUri}" alt="Start"></button>
             <div id="content">
                 <p>Click the Start button to load content...</p>
             </div>
@@ -77,7 +85,7 @@ class SidebarProvider {
               
               startBtn.addEventListener('click', () => {
                   isPaused = !isPaused;
-                  startBtn.textContent = isPaused ? 'Continue' : 'Pause';
+                  startBtn.innerHTML = isPaused ? \`<img src="${startIconUri}" alt="Start">\` : \`<img src="${pauseIconUri}" alt="Pause">\`;
                   vscode.postMessage({ 
                       command: isPaused ? 'pause' : 'continue' 
                   });
@@ -106,17 +114,40 @@ class SidebarProvider {
   }
 }
 
-/**
- * @param {vscode.ExtensionContext} context
- */
-function activate(context) {
-  console.log("ValidAlligator is now active!");
 
-  // Register sidebar provider
-  sidebarProvider = new SidebarProvider(context);
-  context.subscriptions.push(
-    vscode.window.registerWebviewViewProvider("myVew", sidebarProvider),
-  );
+function activate(context) {
+	console.log("ValidAlligator is now active!");
+	const { getAIResponse } = require("./ai");
+
+	async function main() {
+    	const reply = await getAIResponse("Explain recursion in one sentence");
+    	const aiChannel = vscode.window.createOutputChannel("AI Response");
+    	aiChannel.appendLine(reply);
+		aiChannel.show();
+	}
+
+	vscode.commands.registerCommand("validalligator.AItoggle", function () { 
+		vscode.window.showInformationMessage("AI suggestions toggled!");
+		main();
+	});
+	sidebarProvider = new SidebarProvider(context);
+	context.subscriptions.push(
+		vscode.window.registerWebviewViewProvider("myVew", sidebarProvider),
+	);
+	vscode.window.showInformationMessage("activated");
+	
+	const disposable = vscode.commands.registerCommand( "validalligator.helloWorld", function () {
+      vscode.window.showInformationMessage("Hello World from ValidAlligator!");
+	});
+	
+	context.subscriptions.push(disposable);
+	console.log("a");
+	validator.html_validator();
+	vscode.workspace.onDidChangeTextDocument(() => {
+		validator.html_validator();
+  	});
+
+  // context menu :for making the context menu work. have an option for activiate/deactive extention
 }
 
 // This method is called when your extension is deactivated
@@ -126,4 +157,3 @@ module.exports = {
   activate,
   deactivate,
 };
-
