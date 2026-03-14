@@ -23,7 +23,11 @@
     },
     "viewsWelcome": [
       {
+<<<<<<< HEAD
         "view": "myVew",
+=======
+        "view": "myView",
+>>>>>>> fc532657313426e1882c067ee2189e7544199d55
         "contents": "Welcome to ValidAlligator! This is a simple extension that will help you validate your HTML and give suggestions to help you along your way of learning web development.\n [Start](command:validalligator.helloWorld)"
         
       }
@@ -31,9 +35,14 @@
     "views": {
       "my-activitybar": [
         {
+<<<<<<< HEAD
           "id": "myVew",
           "name": "ValidAlligator toolbar",
           "type": "webview"
+=======
+          "id": "myView",
+          "name": "ValidAlligator toolbar"
+>>>>>>> fc532657313426e1882c067ee2189e7544199d55
         }
       ]
     },
