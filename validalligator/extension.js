@@ -37,11 +37,11 @@ class SidebarProvider {
   }
 
   getHtmlForWebview(webview) {
-	const startIconUri = webview.asWebviewUri(
-        vscode.Uri.joinPath(this.context.extensionUri, 'media', 'start.svg')
+    const startIconUri = webview.asWebviewUri(
+      vscode.Uri.joinPath(this.context.extensionUri, "media", "start.svg"),
     );
-	const pauseIconUri = webview.asWebviewUri(
-        vscode.Uri.joinPath(this.context.extensionUri, 'media', 'pause.svg')
+    const pauseIconUri = webview.asWebviewUri(
+      vscode.Uri.joinPath(this.context.extensionUri, "media", "pause.svg"),
     );
     return `
         <!DOCTYPE html>
@@ -140,4 +140,3 @@ module.exports = {
   activate,
   deactivate,
 };
-
