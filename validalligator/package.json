@@ -69,6 +69,7 @@
     "eslint": "^9.39.3"
   },
   "dependencies": {
-    "@google/genai": "^1.45.0"
+    "@google/genai": "^1.45.0",
+    "dotenv": "^17.3.1"
   }
 }

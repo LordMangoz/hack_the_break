@@ -117,8 +117,18 @@ class SidebarProvider {
 
 function activate(context) {
 	console.log("ValidAlligator is now active!");
+	const { getAIResponse } = require("./ai");
+
+	async function main() {
+    	const reply = await getAIResponse("Explain recursion in one sentence");
+    	const aiChannel = vscode.window.createOutputChannel("AI Response");
+    	aiChannel.appendLine(reply);
+		aiChannel.show();
+	}
+
 	vscode.commands.registerCommand("validalligator.AItoggle", function () { 
 		vscode.window.showInformationMessage("AI suggestions toggled!");
+		main();
 	});
 	sidebarProvider = new SidebarProvider(context);
 	context.subscriptions.push(
