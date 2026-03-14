@@ -14,7 +14,7 @@ class SidebarProvider {
     this.onDidChange = this._onDidChange.event;
   }
 
-  resolveWebviewView(webviewView, context, token) {
+  resolveWebviewView(webviewView) {
     webviewView.webview.options = {
       enableScripts: true,
       localResourceRoots: [this.context.extensionUri],
@@ -66,7 +66,7 @@ class SidebarProvider {
             </style>
         </head>
         <body>
-            <button id="startBtn">Start</button>
+            <button id="startBtn">Pause</button>
             <div id="content">
                 <p>Click the Start button to load content...</p>
             </div>
@@ -82,6 +82,14 @@ class SidebarProvider {
                       command: isPaused ? 'pause' : 'continue' 
                   });
               });
+
+              // Listen for updates from extension
+              window.addEventListener('message', (event) => {
+                const message = event.data;
+                if (message.command === 'updateContent') {
+                  document.getElementById('content').innerHTML = message.text;
+                }
+              });
             </script>
         </body>
         </html>
@@ -90,54 +98,10 @@ class SidebarProvider {
 
   updateContent(text) {
     if (this.webview) {
-      const htmlContent = `<!DOCTYPE html>
-                <html lang="en">
-                <head>
-                    <meta charset="UTF-8">
-                    <title>ValidAlligator</title>
-                    <style>
-                        body {
-                            font-family: var(--vscode-font-family);
-                            color: var(--vscode-foreground);
-                            padding: 10px;
-                        }
-                        #content {
-                            line-height: 1.6;
-                        }
-                        button {
-                            background-color: var(--vscode-button-background);
-                            color: var(--vscode-button-foreground);
-                            border: none;
-                            padding: 8px 16px;
-                            cursor: pointer;
-                            border-radius: 2px;
-                        }
-                        button:hover {
-                            background-color: var(--vscode-button-hoverBackground);
-                        }
-                    </style>
-                </head>
-                <body>
-                    <button id="startBtn">Continue</button>
-                    <div id="content">
-                        ${text}
-                    </div>
-                    <script>
-                      const vscode = acquireVsCodeApi();
-                      let isPaused = true;
-                      const startBtn = document.getElementById('startBtn');
-                      
-                      startBtn.addEventListener('click', () => {
-                          isPaused = !isPaused;
-                          startBtn.textContent = isPaused ? 'Continue' : 'Pause';
-                          vscode.postMessage({ 
-                              command: isPaused ? 'pause' : 'continue' 
-                          });
-                      });
-                    </script>
-                </body>
-                </html>`;
-      this.webview.html = htmlContent;
+      this.webview.postMessage({
+        command: "updateContent",
+        text: text,
+      });
     }
   }
 }
