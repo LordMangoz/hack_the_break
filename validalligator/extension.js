@@ -25,16 +25,20 @@ class SidebarProvider {
 
     // Listen for messages from the webview
     this.webview.onDidReceiveMessage((message) => {
-      if (message.command === "start") {
-        const textContent = `<h2>ValidAlligator Started!</h2>
-                <p>Your validation session has begun.</p>`;
+      if (message.command === "pause") {
+        const textContent = `<h2>Paused</h2><p>Session paused. Click continue to resume.</p>`;
+        this.updateContent(textContent);
+      }
+      if (message.command === "continue") {
+        const textContent = `<h2>Resumed</h2><p>Session resumed!</p>`;
         this.updateContent(textContent);
       }
     });
   }
 
   getHtmlForWebview() {
-    return `<!DOCTYPE html>
+    return `
+        <!DOCTYPE html>
         <html lang="en">
         <head>
             <meta charset="UTF-8">
@@ -67,13 +71,21 @@ class SidebarProvider {
                 <p>Click the Start button to load content...</p>
             </div>
             <script>
-                const vscode = acquireVsCodeApi();
-                document.getElementById('startBtn').addEventListener('click', () => {
-                    vscode.postMessage({ command: 'start' });
-                });
+              const vscode = acquireVsCodeApi();
+              let isPaused = false;
+              const startBtn = document.getElementById('startBtn');
+              
+              startBtn.addEventListener('click', () => {
+                  isPaused = !isPaused;
+                  startBtn.textContent = isPaused ? 'Continue' : 'Pause';
+                  vscode.postMessage({ 
+                      command: isPaused ? 'pause' : 'continue' 
+                  });
+              });
             </script>
         </body>
-        </html>`;
+        </html>
+        `;
   }
 
   updateContent(text) {
@@ -92,12 +104,37 @@ class SidebarProvider {
                         #content {
                             line-height: 1.6;
                         }
+                        button {
+                            background-color: var(--vscode-button-background);
+                            color: var(--vscode-button-foreground);
+                            border: none;
+                            padding: 8px 16px;
+                            cursor: pointer;
+                            border-radius: 2px;
+                        }
+                        button:hover {
+                            background-color: var(--vscode-button-hoverBackground);
+                        }
                     </style>
                 </head>
                 <body>
+                    <button id="startBtn">Continue</button>
                     <div id="content">
                         ${text}
                     </div>
+                    <script>
+                      const vscode = acquireVsCodeApi();
+                      let isPaused = true;
+                      const startBtn = document.getElementById('startBtn');
+                      
+                      startBtn.addEventListener('click', () => {
+                          isPaused = !isPaused;
+                          startBtn.textContent = isPaused ? 'Continue' : 'Pause';
+                          vscode.postMessage({ 
+                              command: isPaused ? 'pause' : 'continue' 
+                          });
+                      });
+                    </script>
                 </body>
                 </html>`;
       this.webview.html = htmlContent;
@@ -116,18 +153,6 @@ function activate(context) {
   context.subscriptions.push(
     vscode.window.registerWebviewViewProvider("myVew", sidebarProvider),
   );
-
-  // Start button command
-  const disposable = vscode.commands.registerCommand(
-    "validalligator.helloWorld",
-    function () {
-      const textContent = `<h2>ValidAlligator Started!</h2>
-            <p>Your validation session has begun.</p>`;
-      sidebarProvider.updateContent(textContent);
-    },
-  );
-
-  context.subscriptions.push(disposable);
 }
 
 // This method is called when your extension is deactivated
