@@ -14,7 +14,7 @@ class SidebarProvider {
     this.onDidChange = this._onDidChange.event;
   }
 
-  resolveWebviewView(webviewView, context, token) {
+  resolveWebviewView(webviewView) {
     webviewView.webview.options = {
       enableScripts: true,
       localResourceRoots: [this.context.extensionUri],
@@ -66,7 +66,7 @@ class SidebarProvider {
             </style>
         </head>
         <body>
-            <button id="startBtn">Start</button>
+            <button id="startBtn">start</button>
             <div id="content">
                 <p>Click the Start button to load content...</p>
             </div>
@@ -82,20 +82,28 @@ class SidebarProvider {
                       command: isPaused ? 'pause' : 'continue' 
                   });
               });
+
+              // Listen for updates from extension
+              window.addEventListener('message', (event) => {
+                const message = event.data;
+                if (message.command === 'updateContent') {
+                  document.getElementById('content').innerHTML = message.text;
+                }
+              });
             </script>
         </body>
         </html>
         `;
   }
 
-	updateContent(text) {
-		if (this.webview) {
-			this.webview.postMessage({  // remove the extra .webview
-				command: "updateContent",
-				text: text,
-			});
-		}
-	}
+  updateContent(text) {
+    if (this.webview) {
+      this.webview.postMessage({
+        command: "updateContent",
+        text: text,
+      });
+    }
+  }
 }
 
 /**
