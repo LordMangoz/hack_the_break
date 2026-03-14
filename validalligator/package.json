@@ -1,0 +1,58 @@
+{
+  "name": "validalligator",
+  "displayName": "ValidAlligator",
+  "description": "An Html, css, and javascript validator for beginner, or intermediate web developers. All in VS Code! ",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.110.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [],
+  "main": "./extension.js",
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "my-activitybar",
+          "title": "ValidAlligator",
+          "icon": "media/aperture-svgrepo-com.svg"
+        }
+      ]
+    },
+    "viewsWelcome": [
+      {
+        "view": "myVew",
+        "contents": "Welcome to ValidAlligator! This is a simple extension that will help you validate your HTML and give suggestions to help you along your way of learning web development.\n [Start](command:validalligator.helloWorld)"
+        
+      }
+    ],
+    "views": {
+      "my-activitybar": [
+        {
+          "id": "myVew",
+          "name": "ValidAlligator toolbar",
+          "type": "webview"
+        }
+      ]
+    },
+    "commands": [{
+      "command": "validalligator.helloWorld",
+      "title": "Hello World"
+    }]
+  },
+  "scripts": {
+    "lint": "eslint .",
+    "pretest": "npm run lint",
+    "test": "vscode-test"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.110.0",
+    "@types/mocha": "^10.0.10",
+    "@types/node": "22.x",
+    "eslint": "^9.39.3",
+    "@vscode/test-cli": "^0.0.12",
+    "@vscode/test-electron": "^2.5.2"
+  }
+}
