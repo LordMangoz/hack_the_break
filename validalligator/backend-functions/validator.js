@@ -317,19 +317,20 @@ function missingParent(docElements) {}
 function missNexted(docElements) {}
 //multiple single only elements
 function multipleBodies(docElements) {
-  let count = 0;
+  const bodyTags = [];
+  
   for (const tag of docElements) {
-    if (tag.tagName === "body") {
-      count++;
+    if (tag.tagName === "body" && tag.elementType === "open") {
+      bodyTags.push(tag);
     }
   }
-  if (count > 1) {
-    for (const tag of docElements) {
-        if (tag.tagName === "body") {
-            highlightWarning(tag);  // Highlight each body tag found
-        }
+  
+  // Highlight all duplicate opening body tags
+  if (bodyTags.length > 1) {
+    for (const tag of bodyTags) {
+      highlightWarning(tag);
     }
-}
+  }
 }
 
 //to check for duplicate id
