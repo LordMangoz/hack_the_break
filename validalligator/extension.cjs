@@ -1,7 +1,7 @@
 
 const { highlightWarning } = require('./backend-functions/html-highlighter.cjs');
 const {takeNote, updateDirectory, headerSelector, updateFileName, updateExtensionName } = require('./backend-functions/outputNote.cjs');
-const { setAPIKey } = require('./backend-functions/apiKeyChange.cjs');
+const { getAPIKey, setAPIKey } = require('./backend-functions/apiKeyChange.cjs');
 
 const vscode = require('vscode');
 
@@ -185,149 +185,163 @@ class SidebarProvider {
  */
 function activate(context) {
 
-	let togglestate = false;
-  	const { getAIResponse } = require("./backend-functions/ai.cjs");
+let togglestate = false;
 
-	const aiToggle = vscode.commands.registerCommand(
-    "validalligator.AItoggle",
-    function () {
-      togglestate = !togglestate;
-      if (togglestate) {
-        vscode.window.showInformationMessage("AI suggestions enabled!");
-      } else {
-        vscode.window.showInformationMessage("AI suggestions disabled!");
-      }
-    },
-  );
+const { getAIResponse } = require("./backend-functions/ai.cjs");
 
-  sidebarProvider = new SidebarProvider(context);
-  context.subscriptions.push(
-    vscode.window.registerWebviewViewProvider("myVew", sidebarProvider),
-  );
-  vscode.window.showInformationMessage("activated");
 
-  const analyzeDisposable = vscode.commands.registerCommand(
-    "validalligator.analyzeText",
-    function () {
-      sidebarProvider.executeAnalysis();
-    },
-  );
+const aiToggle = vscode.commands.registerCommand(
+  "validalligator.AItoggle",
+  function () {
+    togglestate = !togglestate;
+    if (togglestate) {
+      vscode.window.showInformationMessage("AI suggestions enabled!");
+    } else {
+      vscode.window.showInformationMessage("AI suggestions disabled!");
+    }
+  },
+);
 
-  const debugDisposable = vscode.commands.registerCommand(
-    "validalligator.debuggingText",
-    async function () {
-      if (sidebarProvider.isPaused) {
-        vscode.window.showWarningMessage("Resume the session to use debugging");
-        return;
-      }
-      if (!togglestate) {
-        vscode.window.showWarningMessage(
-          "AI suggestions are disabled. Enable them to use debugging",
-        );
-        return;
-      }
-      const selectedText = vscode.window.activeTextEditor?.document.getText(
-        vscode.window.activeTextEditor?.selection,
+sidebarProvider = new SidebarProvider(context);
+context.subscriptions.push(
+  vscode.window.registerWebviewViewProvider("myVew", sidebarProvider),
+);
+vscode.window.showInformationMessage("activated");
+
+const analyzeDisposable = vscode.commands.registerCommand(
+  "validalligator.analyzeText",
+  function () {
+    sidebarProvider.executeAnalysis();
+  },
+);
+
+const debugDisposable = vscode.commands.registerCommand(
+  "validalligator.debuggingText",
+  async function () {
+    if (sidebarProvider.isPaused) {
+      vscode.window.showWarningMessage("Resume the session to use debugging");
+      return;
+    }
+    if (!togglestate) {
+      vscode.window.showWarningMessage(
+        "AI suggestions are disabled. Enable them to use debugging",
       );
-      if (!selectedText) {
-        vscode.window.showWarningMessage("Please select text to debug");
-        return;
-      }
-      sidebarProvider.updateContent(`<p>Analyzing for debugging issues...</p>`);
+      return;
+    }
+    const selectedText = vscode.window.activeTextEditor?.document.getText(
+      vscode.window.activeTextEditor?.selection,
+    );
+    if (!selectedText) {
+      vscode.window.showWarningMessage("Please select text to debug");
+      return;
+    }
+    sidebarProvider.updateContent(`<p>Analyzing for debugging issues...</p>`);
+    
+    try {
       const analysis = await getAIResponse(
+        context,
         `You are a debugging assistant. Respond in this exact format:
 
-				**Issue:** [one sentence — what is wrong and why, under 20 words]
+        **Issue:** [one sentence — what is wrong and why, under 20 words]
 
-				\`\`\`
-				[corrected code only — no explanations inside the block]
-				\`\`\`
+        \`\`\`
+        [corrected code only — no explanations inside the block]
+        \`\`\`
 
-				Fix only what is broken. Do not rewrite unrelated code. If multiple bugs exist, fix all in one block with a separate Issue: line for each.\n\n${selectedText}`,
+        Fix only what is broken. Do not rewrite unrelated code. If multiple bugs exist, fix all in one block with a separate Issue: line for each.\n\n${selectedText}`,
       );
       generatedPrompt = analysis;
       sidebarProvider.updateContentWithMarkdown(analysis);
-    },
-  );
+    } catch (error) {
+      sidebarProvider.updateContent(`<p style="color:red;">Error: ${error.message}</p>`);
+    }
+  },
+);
 
-  const suggestDisposable = vscode.commands.registerCommand(
-    "validalligator.suggestText",
-    async function () {
-      if (sidebarProvider.isPaused) {
-        vscode.window.showWarningMessage(
-          "Resume the session to use suggestions",
-        );
-        return;
-      }
-      if (!togglestate) {
-        vscode.window.showWarningMessage(
-          "AI suggestions are disabled. Enable them to use debugging",
-        );
-        return;
-      }
-      const selectedText = vscode.window.activeTextEditor?.document.getText(
-        vscode.window.activeTextEditor?.selection,
+const suggestDisposable = vscode.commands.registerCommand( "validalligator.suggestText", async function () {
+    if (sidebarProvider.isPaused) {
+      vscode.window.showWarningMessage(
+        "Resume the session to use suggestions",
       );
-      if (!selectedText) {
-        vscode.window.showWarningMessage("Please select text for suggestions");
-        return;
-      }
-      sidebarProvider.updateContent(`<p>Generating suggestions...</p>`);
+      return;
+    }
+    if (!togglestate) {
+      vscode.window.showWarningMessage(
+        "AI suggestions are disabled. Enable them to use debugging",
+      );
+      return;
+    }
+    const selectedText = vscode.window.activeTextEditor?.document.getText(
+      vscode.window.activeTextEditor?.selection,
+    );
+    if (!selectedText) {
+      vscode.window.showWarningMessage("Please select text for suggestions");
+      return;
+    }
+    sidebarProvider.updateContent(`<p>Generating suggestions...</p>`);
+    
+    try {
       const analysis = await getAIResponse(
+        context,
         `You are a code mentor doing a quick code review. Respond in this exact format:
 
-				**What went wrong:** [1–2 sentences explaining the root cause simply]
+        **What went wrong:** [1–2 sentences explaining the root cause simply]
 
-				**Why it matters:** [1 sentence on the consequence if left unfixed]
+        **Why it matters:** [1 sentence on the consequence if left unfixed]
 
-				**How to fix it:** [short prose walkthrough — guide them, don't just hand them code]
+        **How to fix it:** [short prose walkthrough — guide them, don't just hand them code]
 
-				\`\`\`
-				[minimal illustrative example under 20 lines]
-				\`\`\`
+        \`\`\`
+        [minimal illustrative example under 20 lines]
+        \`\`\`
 
-				Max 3 short paragraphs of prose. No extra headers or bullet lists.\n\n${selectedText}`,
+        Max 3 short paragraphs of prose. No extra headers or bullet lists.\n\n${selectedText}`,
       );
       generatedPrompt = analysis;
       sidebarProvider.updateContentWithMarkdown(analysis);
-    },
-  );
+    } catch (error) {
+      sidebarProvider.updateContent(`<p style="color:red;">Error: ${error.message}</p>`);
+    }
+  },
+);
 
-  const refactorDisposable = vscode.commands.registerCommand(
-    "validalligator.refactorText",
-    async function () {
-      if (sidebarProvider.isPaused) {
-        vscode.window.showWarningMessage(
-          "Resume the session to use refactoring",
-        );
-        return;
-      }
-      if (!togglestate) {
-        vscode.window.showWarningMessage(
-          "AI suggestions are disabled. Enable them to use refactoring",
-        );
-        return;
-      }
-      const selectedText = vscode.window.activeTextEditor?.document.getText(
-        vscode.window.activeTextEditor?.selection,
+const refactorDisposable = vscode.commands.registerCommand( "validalligator.refactorText", async function () {
+    if (sidebarProvider.isPaused) {
+      vscode.window.showWarningMessage(
+        "Resume the session to use refactoring",
       );
-      if (!selectedText) {
-        vscode.window.showWarningMessage("Please select text to refactor");
-        return;
-      }
-      sidebarProvider.updateContent(
-        `<p>Analyzing for refactoring opportunities...</p>`,
+      return;
+    }
+    if (!togglestate) {
+      vscode.window.showWarningMessage(
+        "AI suggestions are disabled. Enable them to use refactoring",
       );
+      return;
+    }
+    const selectedText = vscode.window.activeTextEditor?.document.getText(
+      vscode.window.activeTextEditor?.selection,
+    );
+    if (!selectedText) {
+      vscode.window.showWarningMessage("Please select text to refactor");
+      return;
+    }
+    sidebarProvider.updateContent(
+      `<p>Analyzing for refactoring opportunities...</p>`,
+    );
+    
+    try {
       const analysis = await getAIResponse(
+        context,
         `You are a refactoring assistant. Return only the refactored code in a single code block — nothing before or after it. Use short inline comments to mark what changed and why. Preserve the original logic and public API. Do not add new features or change behaviour.\n\n${selectedText}`,
       );
       generatedPrompt = analysis;
       sidebarProvider.updateContentWithMarkdown(analysis);
-    },
-  );
+    } catch (error) {
+      sidebarProvider.updateContent(`<p style="color:red;">Error: ${error.message}</p>`);
+    }
+  },
+);
 
-	// Use the console to output diagnostic information (console.log) and errors (console.error)
-	// This line of code will only be executed once when your extension is activated
 	console.log('Congratulations, your extension "validalligator" is now active!');
 
 
@@ -376,7 +390,7 @@ function activate(context) {
 })
 
 	const setAPI = vscode.commands.registerCommand("validalligator.setAPIKey", async function () {
-		await setAPIKey();
+		await setAPIKey(context);
 })
 
 
@@ -391,6 +405,8 @@ function activate(context) {
     debugDisposable,
     suggestDisposable,
     refactorDisposable,
+    changeFileName,
+    changeExtensionName
   );
 
 }

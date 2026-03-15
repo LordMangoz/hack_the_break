@@ -27,7 +27,7 @@ function takeNote(prompt)
         return -1;
     }
 
-    const toAppend = path.join(fileDirectory, fileName + extensionName); 
+    const toAppend = path.join(fileDirectory, fileName + "." + extensionName); 
     let timestamp; 
 
     if (!fs.existsSync(toAppend) || fs.statSync(toAppend).size === 0) // 0 bytes
