@@ -1,5 +1,5 @@
 const vscode = require("vscode");
-const { highlightWarning } = require("./html-highlighter.cjs"); // gotta actaully implement these btw
+const { highlightWarning, applyHighlights } = require("./html-highlighter.cjs");
 const containerElements = [
   "div",
   "section",
@@ -73,7 +73,7 @@ function validate(text, document) {
 
   // All the validators below
   divInsideSpan(docElements);
-  looseText(text, docElements, document);
+  //   looseText(text, docElements, document);
   containerDiv(docElements, document);
   formWithoutSubmit(docElements);
   //   mismatchClosingString();
@@ -84,6 +84,9 @@ function validate(text, document) {
   missingParent(docElements);
   missNexted(docElements);
   multipleBodies(docElements);
+
+  //apply the highlights
+  applyHighlights();
 }
 
 function looseText(text, docElements, document) {
@@ -142,24 +145,26 @@ function createElements(text, document) {
 function setParent(tag, isClosing, parentStack) {
   if (isClosing) {
     if (parentStack.length === 0) return;
-    const top = parentStack[parentStack.length - 1];
-    parentStack.pop();
+
+    while (parentStack.length > 0) {
+      const top = parentStack[parentStack.length - 1];
+
+      parentStack.pop();
+
+      if (top.tagName === tag.tagName) break;
+    }
+
     return;
   }
 
-  if (voidElements.includes(tag.tagName)) {
-    return;
-  }
+  if (voidElements.includes(tag.tagName)) return;
 
   if (parentStack.length > 0) {
     tag.parent = parentStack[parentStack.length - 1];
   }
 
-  if (!voidElements.includes(tag.tagName)) {
-    parentStack.push(tag);
-  }
+  parentStack.push(tag);
 }
-
 function setContainText(tag) {
   if (textContain.includes(tag.tagName)) {
     tag.containText = true;
@@ -182,6 +187,11 @@ function setElementType(tag, isClosing) {
     return;
   }
 
+  if (containerElements.includes(tag.tagName)) {
+    tag.elementType = "container";
+    return;
+  }
+
   tag.elementType = "open";
 }
 //block inside inline
@@ -192,18 +202,30 @@ function divInsideSpan(docElements) {
       // if parent is an inline element
       if (element.parent && inlineElements.includes(element.parent.tagName)) {
         // Block element found inside inline element violation
-        highlightWarning(element.PositionObject);
+        highlightWarning(element.PositionObject.line + 1);
       }
     }
   }
 }
 
-//might skip
 function formWithoutSubmit(docElements) {
   for (const element of docElements) {
-    if (!(element.tagName == "form")) //contains form
-    {
-      return;
+    if (element.tagName === "form") {
+      let foundSubmit = false;
+
+      for (const child of docElements) {
+        if (
+          child.parent === element &&
+          child.tagName === "input" &&
+          child.raw.includes("submit")
+        ) {
+          foundSubmit = true;
+        }
+      }
+
+      if (!foundSubmit) {
+        highlightWarning(element.PositionObject.line + 1);
+      }
     }
   }
 }
@@ -213,7 +235,7 @@ function formWithoutSubmit(docElements) {
 //attribute without a value
 function attributeWithoutValue(docElements) {
   // Regex to find attributes without values: space + word chars not followed by =
-  const attrWithoutValueRegex = /\s(\w+)(?!\s*=)(?:\s|>|\/?>)/g;
+  const attrWithoutValueRegex = /\s([^\s=>\/]+)(?=\s|>)(?!\s*=)/g;
 
   for (const element of docElements) {
     if (element.elementType === "closing") continue;
@@ -225,7 +247,7 @@ function attributeWithoutValue(docElements) {
         continue;
       }
       // Highlight elements with valueless attributes
-      highlightWarning(element.PositionObject);
+      highlightWarning(element.PositionObject.line + 1);
       break; // Only need to highlight once per element
     }
   }
@@ -235,25 +257,25 @@ function attributeWithoutValue(docElements) {
 function duplicateAttributes(docElements) {
   // Regex to find all attributes: word chars followed by optional =value
   const attrRegex = /\b(\w+)(?:\s*=\s*["']?[^"'\s>]*["']?)?/g;
-  
+
   for (const element of docElements) {
-    if (element.elementType === 'closing') continue;
-    
+    if (element.elementType === "closing") continue;
+
     const seenAttributes = new Set();
     let match;
-    
+
     while ((match = attrRegex.exec(element.raw)) !== null) {
       const attrName = match[1].toLowerCase();
-      
+
       // Skip the tag name itself (first match)
       if (match.index === 0 || attrName === element.tagName) continue;
-      
+
       // Check if we've already seen this attribute
       if (seenAttributes.has(attrName)) {
-        highlightWarning(element.PositionObject);
+        highlightWarning(element.PositionObject.line + 1);
         break; // Only need to highlight once per element
       }
-      
+
       seenAttributes.add(attrName);
     }
   }
@@ -280,7 +302,7 @@ function invalidChild(docElements) {
         if (child.parent === element) {
           // If child is not in the valid children list, highlight it
           if (!validChildren.includes(child.tagName)) {
-            highlightWarning(child.PositionObject);
+            highlightWarning(child.PositionObject.line + 1);
           }
         }
       }
@@ -290,24 +312,32 @@ function invalidChild(docElements) {
 
 // unclosed tag
 function unclosedTag(docElements) {
-  const openingStack = [];
-  
+  const stack = [];
+
   for (const element of docElements) {
-    if (element.elementType === "open") {
-      openingStack.push(element);
-    } else if (element.elementType === "closing") {
-      if (openingStack.length > 0) {
-        const lastOpening = openingStack[openingStack.length - 1];
-        if (lastOpening.tagName === element.tagName) {
-          openingStack.pop();
-        }
+    if (element.elementType === "open" || element.elementType === "inline") {
+      stack.push(element);
+      continue;
+    }
+
+    if (element.elementType === "closing") {
+      if (stack.length === 0) {
+        highlightWarning(element.PositionObject.line + 1);
+        continue;
+      }
+
+      const top = stack[stack.length - 1];
+
+      if (top.tagName === element.tagName) {
+        stack.pop();
+      } else {
+        highlightWarning(element.PositionObject.line + 1);
       }
     }
   }
-  
-  // Highlight all unclosed tags remaining in the stack
-  for (const unclosedElement of openingStack) {
-    highlightWarning(unclosedElement);
+
+  for (const remaining of stack) {
+    highlightWarning(remaining.PositionObject.line + 1);
   }
 }
 
