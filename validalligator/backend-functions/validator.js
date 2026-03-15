@@ -57,10 +57,6 @@ function html_validator(event) {
     return;
   }
 
-  if (!event) {
-    return;
-  }
-
   const document = event.document;
   const text = document.getText();
 
@@ -74,7 +70,7 @@ function validate(text, document) {
   if (!text) return;
   const docElements = createElements(text, document);
   looseText(text, docElements, document);
-  containerDiv(text, document);
+  containerDiv(docElements, document);
 
   // parse and check for a test case (a form without whatever) / maybe just activate the highlight function.
   // parse through while checking for things in our list without a container div
@@ -100,7 +96,7 @@ function looseText(text, docElements, document) {
 }
 
 //to check for container around something
-function containerDiv(text, document) {
+function containerDiv(docElements, document) {
   return null;
 }
 
@@ -117,7 +113,7 @@ function createElements(text, document) {
     const isClosing = raw.startsWith("</");
 
     const tag = {
-      lineNumber: document.positionAt(element.index),
+      PositionObject: document.positionAt(element.index),
       tagName: tagName,
       containText: false,
       elementType: "",
@@ -133,7 +129,13 @@ function createElements(text, document) {
 }
 function setParent(tag, isClosing, parentStack) {
   if (isClosing) {
+    if (parentStack.length === 0) return;
+    const top = parentStack[parentStack.length - 1];
     parentStack.pop();
+    return;
+  }
+
+  if (voidElements.includes(tag.tagName)) {
     return;
   }
 
@@ -176,38 +178,9 @@ function divInsideSpan() {
 }
 
 //might skip
-function formWithoutSubmit(text, document) {
-  const diagnostics = [];
-  // form tag
-  const formRegex = /<form[^>]*>([\s\S]*?)<\/form>/gi;
+function formWithoutSubmit() {}
 
-  for (const form of text.matchAll(formRegex)) {
-    const formContent = form[1];
-    const formStartIndex = form.index;
-
-    // if form contains a submit button or input
-    const submitRegex =
-      /<button[^>]*type\s*=\s*['"]?submit['"]?[^>]*>|<input[^>]*type\s*=\s*['"]submit['"][^>]*>/i;
-
-    if (!submitRegex.test(formContent)) {
-      const lineNumber = document.positionAt(formStartIndex).line;
-      const range = new vscode.Range(
-        new vscode.Position(lineNumber, 0),
-        new vscode.Position(lineNumber, form[0].length),
-      );
-
-      const diagnostic = new vscode.Diagnostic(
-        range,
-        "Form element missing submit button!!!!! Add a submit button or input to fix.",
-        vscode.DiagnosticSeverity.Warning,
-      );
-      diagnostic.source = "ValidAlligator";
-      diagnostics.push(diagnostic);
-    }
-  }
-
-  return diagnostics;
-}
+function mismatchClosingString() {}
 
 //attribute without a value
 function attributeWithoutValue() {}
@@ -224,7 +197,6 @@ function unclosedTag() {}
 function missingParent() {}
 //child in partent
 function incorrectnexting() {}
-
 //mulptle single only elemtns
 function multipleBodies() {}
 
