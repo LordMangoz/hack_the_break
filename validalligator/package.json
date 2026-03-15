@@ -42,6 +42,12 @@
           "command": "validalligator.AItoggle",
           "group": "navigation"
         }
+      ],
+      "editor/context": [
+        {
+          "command": "validalligator.highlightWarnings",
+          "group": "navigation"
+        }
       ]
     },
     "commands": [
@@ -83,7 +89,7 @@
       },
       {
         "command": "validalligator.highlightWarnings",
-        "title": "Hightlight Warnings"
+        "title": "Validate Selection"
       },
       {
         "command": "validalligator.updateDirectory",
