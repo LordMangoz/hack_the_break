@@ -1,6 +1,4 @@
-import { count } from "console";
 
-// imports vs extention api
 const vscode = require("vscode");
 // for each item, we need to store the number and the line count
 const containerElements = [
@@ -59,10 +57,6 @@ function html_validator(event) {
     return;
   }
 
-  if (!event) {
-    return;
-  }
-
   const document = event.document;
   const text = document.getText();
 
@@ -76,7 +70,7 @@ function validate(text, document) {
   if (!text) return;
   const docElements = createElements(text, document);
   looseText(text, docElements, document);
-  containerDiv(text, document);
+  containerDiv(docElements, document);
 
   // parse and check for a test case (a form without whatever) / maybe just activate the highlight function.
   // parse through while checking for things in our list without a container div
@@ -102,7 +96,7 @@ function looseText(text, docElements, document) {
 }
 
 //to check for container around something
-function containerDiv(text, document) {
+function containerDiv(docElements, document) {
   return null;
 }
 
@@ -119,7 +113,7 @@ function createElements(text, document) {
     const isClosing = raw.startsWith("</");
 
     const tag = {
-      lineNumber: document.positionAt(element.index),
+      PositionObject: document.positionAt(element.index),
       tagName: tagName,
       containText: false,
       elementType: "",
@@ -135,7 +129,13 @@ function createElements(text, document) {
 }
 function setParent(tag, isClosing, parentStack) {
   if (isClosing) {
+    if (parentStack.length === 0) return;
+    const top = parentStack[parentStack.length - 1];
     parentStack.pop();
+    return;
+  }
+
+  if (voidElements.includes(tag.tagName)) {
     return;
   }
 
@@ -179,6 +179,8 @@ function divInsideSpan() {
 
 //might skip
 function formWithoutSubmit() {}
+
+function mismatchClosingString() {}
 
 //attribute without a value
 function attributeWithoutValue() {}
