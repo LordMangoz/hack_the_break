@@ -96,6 +96,18 @@
       {
         "command": "validalligator.headerSelector",
         "title": "Update number of hashtags headers for timestamps for note.md"
+      },
+      {
+        "command": "validalligator.updateFileName",
+        "title": "Change File Name"
+      },
+      {
+        "command": "validalligator.updateExtensionName",
+        "title": "Change Extension Name"
+      },
+      {
+        "command": "validalligator.setAPIKey",
+        "title": "SET API KEY"
       }
     ]
   },
