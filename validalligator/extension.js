@@ -351,12 +351,9 @@ function activate(context) {
     refactorDisposable,
   );
   console.log("a");
-  validator.html_validator();
-  vscode.workspace.onDidChangeTextDocument(() => {
-    validator.html_validator();
-    vscode.workspace.onDidChangeTextDocument((event) => {
-      validator.html_validator(event);
-    });
+
+  vscode.workspace.onDidChangeTextDocument((event) => {
+    validator.html_validator(event);
   });
 }
 
