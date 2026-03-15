@@ -1,5 +1,6 @@
 const vscode = require("vscode");
 const validator = require("./backend-functions/validator");
+const { marked } = require("marked");
 
 // This method is called when your extension is activated. Your extension is activated the very first time the command is executed
 
@@ -61,6 +62,52 @@ class SidebarProvider {
                 }
                 #content {
                     line-height: 1.6;
+                }
+                #content h1, #content h2, #content h3, #content h4 {
+                    margin-top: 16px;
+                    margin-bottom: 8px;
+                    font-weight: 600;
+                }
+                #content code {
+                    background-color: var(--vscode-editor-background);
+                    color: var(--vscode-editor-foreground);
+                    padding: 2px 6px;
+                    border-radius: 3px;
+                    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+                    font-size: 0.9em;
+                }
+                #content pre {
+                    background-color: var(--vscode-editor-background);
+                    color: var(--vscode-editor-foreground);
+                    padding: 12px;
+                    border-radius: 5px;
+                    overflow-x: auto;
+                    margin: 8px 0;
+                    border-left: 3px solid var(--vscode-textBlockQuote-border);
+                }
+                #content pre code {
+                    background-color: transparent;
+                    padding: 0;
+                    color: inherit;
+                }
+                #content ul, #content ol {
+                    margin: 8px 0;
+                    padding-left: 24px;
+                }
+                #content li {
+                    margin: 4px 0;
+                }
+                #content blockquote {
+                    border-left: 3px solid var(--vscode-textBlockQuote-border);
+                    color: var(--vscode-textBlockQuote-foreground);
+                    padding-left: 12px;
+                    margin: 8px 0;
+                }
+                #content strong {
+                    font-weight: 600;
+                }
+                #content em {
+                    font-style: italic;
                 }
                 button {
                     background-color: var(--vscode-button-background);
@@ -124,6 +171,11 @@ class SidebarProvider {
     }
   }
 
+  updateContentWithMarkdown(markdownText) {
+    const html = marked(markdownText);
+    this.updateContent(html);
+  }
+
   async executeAnalysis() {
     const { getAIResponse } = require("./ai");
     const selectedText = await vscode.window.activeTextEditor?.document.getText(
@@ -143,7 +195,7 @@ class SidebarProvider {
     const analysis = await getAIResponse(
       `Recommend any suggestions with coding examples:\n\n${selectedText}`,
     );
-    this.updateContent(`<h3>Analysis Results</h3><p>${analysis}</p>`);
+    this.updateContentWithMarkdown(analysis);
   }
 }
 
@@ -208,9 +260,7 @@ function activate(context) {
 
         Fix only what is broken. Do not rewrite unrelated code. If multiple bugs exist, fix all in one block with a separate Issue: line for each.\n\n${selectedText}`,
       );
-      sidebarProvider.updateContent(
-        `<h3>Debugging Analysis</h3><p>${analysis}</p>`,
-      );
+      sidebarProvider.updateContentWithMarkdown(analysis);
     },
   );
 
@@ -246,7 +296,7 @@ function activate(context) {
 
         Max 3 short paragraphs of prose. No extra headers or bullet lists.\n\n${selectedText}`,
       );
-      sidebarProvider.updateContent(`<h3>Suggestions</h3><p>${analysis}</p>`);
+      sidebarProvider.updateContentWithMarkdown(analysis);
     },
   );
 
@@ -272,9 +322,7 @@ function activate(context) {
       const analysis = await getAIResponse(
         `You are a refactoring assistant. Return only the refactored code in a single code block — nothing before or after it. Use short inline comments to mark what changed and why. Preserve the original logic and public API. Do not add new features or change behaviour.\n\n${selectedText}`,
       );
-      sidebarProvider.updateContent(
-        `<h3>Refactoring Suggestions</h3><p>${analysis}</p>`,
-      );
+      sidebarProvider.updateContentWithMarkdown(analysis);
     },
   );
 
