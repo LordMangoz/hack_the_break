@@ -1,5 +1,6 @@
 const path = require("path");
-require("dotenv").config({ path: path.join(__dirname, ".env") });
+const dotenv = require("dotenv").config({ path: path.join(__dirname, "../.env") });
+
 
 async function getAIResponse(prompt) {
   const { GoogleGenAI } = await import("@google/genai");
@@ -13,5 +14,10 @@ async function getAIResponse(prompt) {
   return response.text;
 }
 module.exports = {
+<<<<<<< HEAD:validalligator/ai.js
   getAIResponse,
 };
+=======
+    getAIResponse,
+};
+>>>>>>> bf364207694bafbbcc5bd65df71eb105b945bb37:validalligator/backend-functions/ai.cjs

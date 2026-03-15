@@ -4,6 +4,10 @@ const path = require('path');
 
 let fileDirectory = null;
 
+let fileName = "notes";
+
+let extensionName = ".md";
+
 let hashtagHeader = '# ';
 
 /**
@@ -11,13 +15,19 @@ let hashtagHeader = '# ';
  */
 function takeNote(prompt)
 {
+    if (prompt == undefined || prompt.length == 0)
+    {
+        console.error("Nothing to take note of");
+        return -2   ;
+    }
+
     if (fileDirectory == null)
     {
         console.error("Missing directory to save note.md");
         return -1;
     }
 
-    const toAppend = path.join(fileDirectory, "notes.md"); 
+    const toAppend = path.join(fileDirectory, fileName + extensionName); 
     let timestamp; 
 
     if (!fs.existsSync(toAppend) || fs.statSync(toAppend).size === 0) // 0 bytes
@@ -44,6 +54,47 @@ function takeNote(prompt)
             console.error("error", err);
         }
     }
+
+async function updateFileName()
+{
+    const fileNameOptions =
+    {
+        placeHolder: "Enter file name",
+
+        validateInput: (value) => {
+            const regex = /^[^\\/:*?"<>|.\s]+$/;
+            if (!regex.test(value)) {
+                return 'Invalid file name';  
+            }
+            return undefined;
+          }
+    }
+
+    fileName = await vscode.window.showInputBox(fileNameOptions);
+    vscode.window.showInformationMessage(`New file name set: ${fileName}` )
+}
+
+async function updateExtensionName()
+{
+    const extensionNameOptions =
+    {
+        placeHolder: "Enter file name",
+
+        validateInput: (value) => {
+            const regex = /^[a-z0-9]+$/;
+            if (!regex.test(value)) {
+                return 'Invalid file extension';  
+            }
+            return undefined;
+          }
+    }
+
+    extensionName = await vscode.window.showInputBox(extensionNameOptions);
+    vscode.window.showInformationMessage(`New extension name set: ${extensionName}` )
+}
+
+
+
 
 async function updateDirectory()
 {
@@ -87,19 +138,19 @@ async function headerSelector()
 
     switch (chosenInt)
     {
-        case 0: hashtagHeader = '# ';
+        case 0: hashtagHeader = '';
         break;
-        case 1: hashtagHeader = '## ';
+        case 1: hashtagHeader = '# ';
         break;
-        case 2: hashtagHeader = '### ';
+        case 2: hashtagHeader = '## ';
         break;
-        case 3: hashtagHeader = '#### ';
+        case 3: hashtagHeader = '### ';
         break;
-        case 4: hashtagHeader = '##### ';
+        case 4: hashtagHeader = '#### ';
         break;
-        case 5: hashtagHeader = '###### ';
+        case 5: hashtagHeader = '##### ';
         break;
-        case 6: hashtagHeader = '####### ';
+        case 6: hashtagHeader = '###### ';
         break;
     }
 
@@ -109,6 +160,8 @@ async function headerSelector()
 module.exports =  {
     takeNote,
     updateDirectory,
-    headerSelector
+    headerSelector,
+    updateFileName,
+    updateExtensionName
 };
 
