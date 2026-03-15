@@ -1,3 +1,5 @@
+import { count } from "console";
+
 // imports vs extention api
 const vscode = require("vscode");
 // for each item, we need to store the number and the line count
@@ -194,7 +196,17 @@ function missingParent() {}
 //child in partent
 function incorrectnexting() {}
 //mulptle single only elemtns
-function multipleBodies() {}
+function multipleBodies(docElements) {
+  let count = 0;
+  for (const tag of docElements) {
+    if (tag.tagName === "body") {
+      count++;
+    }
+  }
+  if (count > 1) {
+    //highlight all bodies
+  } 
+}
 
 //to check for duplicate id
 module.exports = { html_validator };
