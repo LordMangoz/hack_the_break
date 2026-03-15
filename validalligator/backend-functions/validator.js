@@ -1,10 +1,6 @@
 const vscode = require("vscode");
-<<<<<<< HEAD
-const { highlightWarning } = require("./html-highlighter.cjs"); // gotta actaully implement these btw
-=======
 const { highlightWarning } = require("./html-highlighter.cjs");
 const { addError, clearErrors } = require("./error-storage.cjs");
->>>>>>> bf364207694bafbbcc5bd65df71eb105b945bb37
 const containerElements = [
   "div",
   "section",
@@ -80,24 +76,6 @@ function validate(text, document) {
   divInsideSpan(docElements);
   //   looseText(text, docElements, document);
   containerDiv(docElements, document);
-<<<<<<< HEAD
-  highlightWarning(1);
-  // parse and check for a test case (a form without whatever) / maybe just activate the highlight function.
-  // parse through while checking for things in our list without a container div
-}
-
-function looseText(text, docElements, document) {
-  const looseRegex = /([a-zA-Z0-9]+)/g;
-
-  for (const looseText of text.matchAll(looseRegex)) {
-    if (document.positionAt(looseText.index)) {
-      if (!looseText.parent.containText) {
-        //call highlighter.
-        highlightWarning(docElements[looseText.index]);
-      }
-    }
-  }
-=======
   formWithoutSubmit(docElements);
   //   mismatchClosingString();
   attributeWithoutValue(docElements);
@@ -108,7 +86,6 @@ function looseText(text, docElements, document) {
   multipleBodies(docElements);
   missingParent(docElements);
   missNexted(docElements);
->>>>>>> bf364207694bafbbcc5bd65df71eb105b945bb37
 }
 
 //to check for container around something
@@ -430,9 +407,6 @@ function multipleBodies(docElements) {
     }
   }
   if (count > 1) {
-<<<<<<< HEAD
-    //highlight all bodies
-=======
     for (const tag of docElements) {
       if (tag.tagName === "body") {
         const lineNum = tag.PositionObject.line + 1;
@@ -444,7 +418,6 @@ function multipleBodies(docElements) {
         );
       }
     }
->>>>>>> bf364207694bafbbcc5bd65df71eb105b945bb37
   }
 }
 
