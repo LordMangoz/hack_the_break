@@ -130,6 +130,7 @@ function activate(context) {
 		vscode.window.showInformationMessage("AI suggestions toggled!");
 		main();
 	});
+	
 	sidebarProvider = new SidebarProvider(context);
 	context.subscriptions.push(
 		vscode.window.registerWebviewViewProvider("myVew", sidebarProvider),
