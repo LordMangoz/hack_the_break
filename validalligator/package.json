@@ -64,6 +64,22 @@
       {
         "command": "validalligator.refactorText",
         "title": "Refactor"
+      },
+      {
+        "command": "validalligator.highlightWarnings",
+        "title": "Hightlight Warnings"
+      },
+      {
+      "command": "validalligator.updateDirectory",
+        "title": "Change note.md directory"
+      },
+      {
+        "command": "validalligator.testNote",
+        "title": "Take note"
+      },
+      {
+        "command": "validalligator.headerSelector",
+        "title": "Update number of hashtags headers for timestamps for note.md"
       }
     ]
   },
