@@ -89,7 +89,7 @@
       },
       {
         "command": "validalligator.highlightWarnings",
-        "title": "Validate Selection"
+        "title": "Validate Code"
       },
       {
         "command": "validalligator.updateDirectory",

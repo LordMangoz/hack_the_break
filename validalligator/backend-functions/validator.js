@@ -81,7 +81,6 @@ function validate(text, document) {
   attributeWithoutValue(docElements);
   duplicateAttributes(docElements);
   invalidChild(docElements);
-  unclosedTag(docElements);
   multipleHeads(docElements);
   multipleBodies(docElements);
   missingParent(docElements);
@@ -314,7 +313,6 @@ function invalidChild(docElements) {
     }
   }
 }
-
 
 //missing parent
 function missingParent(_docElements) {}

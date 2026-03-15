@@ -1,6 +1,7 @@
 const {
   highlightWarning,
   applyHighlights,
+  clearHighlights,
   getErrors,
 } = require("./backend-functions/html-highlighter.cjs");
 const {
@@ -40,6 +41,8 @@ class SidebarProvider {
       if (message.command === "pause") {
         this.isPaused = true;
         const textContent = `<h2>Paused</h2><p> Session paused. Click continue to resume.</p>`;
+        clearHighlights();
+
         this.updateContent(textContent);
       }
       if (message.command === "continue") {
@@ -73,7 +76,7 @@ class SidebarProvider {
             <meta charset="UTF-8">
             <title>ValidAlligator</title>
             <style>
-                body {
+body {
                     font-family: var(--vscode-font-family);
                     color: var(--vscode-foreground);
                     padding: 10px;
@@ -139,35 +142,15 @@ class SidebarProvider {
                 button:hover:not(:disabled) {
                     background-color: var(--vscode-button-hoverBackground);
                 }
-                 button {
-                  padding: 6px 10px;
-                  border-radius: 4px;
-                }   
-
-#content {
-    margin-top: 10px;
-}
                 button:disabled {
                     opacity: 0.5;
                     cursor: not-allowed;
                 }
-                .ai-toogle {
-                    background-color: var(--vscode-button-background);
-                    color: var(--vscode-button-foreground);
-                    border: none;
-                    padding: 8px 16px;
-                    cursor: pointer;
-                    border-radius: 2px;
-                    margin-right: 8px;
-                }
-                .ai-toggle:hover {
-                 background-color: var(--vscode-button-secondaryHoverBackground);
-}
-                
 				img {
 					width: 16px;
 					height: 16px;
 				}
+            
             </style>
         </head>
         <body>
@@ -248,10 +231,6 @@ class SidebarProvider {
  * @param {vscode.ExtensionContext} context
  */
 function activate(context) {
-  console.log(
-    'Congratulations, your extension "validalligator" is now active!',
-  );
-
   let togglestate = false;
   const { getAIResponse } = require("./backend-functions/ai.cjs");
 
@@ -271,7 +250,6 @@ function activate(context) {
   context.subscriptions.push(
     vscode.window.registerWebviewViewProvider("myVew", sidebarProvider),
   );
-  vscode.window.showInformationMessage("activated");
 
   const debugDisposable = vscode.commands.registerCommand(
     "validalligator.debuggingText",
