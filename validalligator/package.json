@@ -10,7 +10,7 @@
     "Other"
   ],
   "activationEvents": [],
-  "main": "./extension.js",
+  "main": "./extension.cjs",
   "contributes": {
     "viewsContainers": {
       "activitybar": [
@@ -70,7 +70,7 @@
         "title": "Hightlight Warnings"
       },
       {
-      "command": "validalligator.updateDirectory",
+        "command": "validalligator.updateDirectory",
         "title": "Change note.md directory"
       },
       {
