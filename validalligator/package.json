@@ -54,6 +54,10 @@
       {
         "command": "validalligator.refactorText",
         "title": "Refactor"
+      },
+      {
+        "command": "validalligator.refactorText",
+        "title": "Toggle AI Selector Tool"
       }
     ]
   },
