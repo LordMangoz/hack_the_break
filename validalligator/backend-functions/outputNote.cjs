@@ -38,7 +38,7 @@ function takeNote(prompt)
 
     else
     {
-        timestamp = '\n\n' + hashtagHeader + + new Date().toLocaleString() + '\n'; 
+        timestamp = '\n\n' + hashtagHeader + new Date().toLocaleString() + '\n'; 
     }
 
         try

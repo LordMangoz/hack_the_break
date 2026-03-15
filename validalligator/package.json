@@ -56,7 +56,7 @@
       },
       {
         "command": "validalligator.updateDirectory",
-        "title": "Change note.md directory"
+        "title": "Change note directory"
       },
       {
         "command": "validalligator.testNote",
@@ -68,7 +68,7 @@
       },
       {
         "command": "validalligator.AItoggle",
-        "title": "Toggle AI Suggestions"
+        "title": "Toggle AI validalligator"
       },
       {
         "command": "validalligator.suggestText",

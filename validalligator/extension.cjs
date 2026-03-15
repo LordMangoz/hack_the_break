@@ -389,9 +389,6 @@ const refactorDisposable = vscode.commands.registerCommand( "validalligator.refa
 		await updateExtensionName();
 })
 
-	const setAPI = vscode.commands.registerCommand("validalligator.setAPIKey", async function () {
-		await setAPIKey(context);
-})
 
 
 	context.subscriptions.push(
