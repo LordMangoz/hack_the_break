@@ -54,6 +54,10 @@ function html_validator(event) {
     return;
   }
 
+  if (!event) {
+    return;
+  }
+
   const document = event.document;
   const text = document.getText();
 
@@ -73,13 +77,10 @@ function validate(text, document) {
   // parse through while checking for things in our list without a container div
 }
 
-function looseText(text) {
- 
-}
+function looseText(text) {}
 
 //to check for container around something
 function containerDiv(text, document) {
-  
   return null;
 }
 

@@ -1,7 +1,6 @@
 const vscode = require("vscode");
 const validator = require("./backend-functions/validator");
 
-
 // This method is called when your extension is activated. Your extension is activated the very first time the command is executed
 
 let sidebarProvider;
@@ -181,7 +180,7 @@ class SidebarProvider {
   async executeAnalysis() {
     const { getAIResponse } = require("./ai");
     const selectedText = await vscode.window.activeTextEditor?.document.getText(
-      vscode.window.activeTextEditor.selection,
+      vscode.window.activeTextEditor?.selection,
     );
 
     if (!selectedText) {
@@ -242,11 +241,13 @@ function activate(context) {
         return;
       }
       if (!togglestate) {
-        vscode.window.showWarningMessage("AI suggestions are disabled. Enable them to use debugging");
+        vscode.window.showWarningMessage(
+          "AI suggestions are disabled. Enable them to use debugging",
+        );
         return;
       }
       const selectedText = vscode.window.activeTextEditor?.document.getText(
-        vscode.window.activeTextEditor.selection,
+        vscode.window.activeTextEditor?.selection,
       );
       if (!selectedText) {
         vscode.window.showWarningMessage("Please select text to debug");
@@ -272,15 +273,19 @@ function activate(context) {
     "validalligator.suggestText",
     async function () {
       if (sidebarProvider.isPaused) {
-        vscode.window.showWarningMessage("Resume the session to use suggestions",);
+        vscode.window.showWarningMessage(
+          "Resume the session to use suggestions",
+        );
         return;
       }
       if (!togglestate) {
-        vscode.window.showWarningMessage("AI suggestions are disabled. Enable them to use debugging");
+        vscode.window.showWarningMessage(
+          "AI suggestions are disabled. Enable them to use debugging",
+        );
         return;
       }
       const selectedText = vscode.window.activeTextEditor?.document.getText(
-        vscode.window.activeTextEditor.selection,
+        vscode.window.activeTextEditor?.selection,
       );
       if (!selectedText) {
         vscode.window.showWarningMessage("Please select text for suggestions");
@@ -310,15 +315,19 @@ function activate(context) {
     "validalligator.refactorText",
     async function () {
       if (sidebarProvider.isPaused) {
-        vscode.window.showWarningMessage("Resume the session to use refactoring",);
+        vscode.window.showWarningMessage(
+          "Resume the session to use refactoring",
+        );
         return;
       }
       if (!togglestate) {
-        vscode.window.showWarningMessage("AI suggestions are disabled. Enable them to use refactoring");
+        vscode.window.showWarningMessage(
+          "AI suggestions are disabled. Enable them to use refactoring",
+        );
         return;
       }
       const selectedText = vscode.window.activeTextEditor?.document.getText(
-        vscode.window.activeTextEditor.selection,
+        vscode.window.activeTextEditor?.selection,
       );
       if (!selectedText) {
         vscode.window.showWarningMessage("Please select text to refactor");
