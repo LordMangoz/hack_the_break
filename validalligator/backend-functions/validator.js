@@ -202,20 +202,36 @@ function formWithoutSubmit(docElements) {
 
 // function mismatchClosingString() {}
 
-//attribute without a value
-function attributeWithoutValue(docElements) {}
+function attributeWithoutValue(docElements) {
+  const attrRegex = /\s([a-zA-Z-:]+)(?:=("[^"]*"|'[^']*'|[^\s>]+))?/g;
+
+  for (const element of docElements) {
+    const raw = element.raw;
+
+    for (const match of raw.matchAll(attrRegex)) {
+      const name = match[1]; // key
+      const value = match[2]; // value
+
+      if (value === undefined) {
+        highlightWarning(element.PositionObject);
+      }
+    }
+  }
+}
 
 //lower priorty
 function duplicateAttributes(docElements) {}
 
+//ai this one
 function invalidChild(docElements) {}
 
 // unclosed tag
 function unclosedTag(docElements) {}
 
-//missing parten
+//missing parent
 function missingParent(docElements) {}
-//child in partent
+
+//child in parent
 function missNexted(docElements) {}
 //mulptle single only elemtns
 function multipleBodies(docElements) {
