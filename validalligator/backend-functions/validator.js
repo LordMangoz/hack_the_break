@@ -289,14 +289,33 @@ function invalidChild(docElements) {
 }
 
 // unclosed tag
-function unclosedTag(docElements) {}
+function unclosedTag(docElements) {
+  const openingStack = [];
+
+  for (const element of docElements) {
+    if (element.elementType === "open") {
+      openingStack.push(element);
+    } else if (element.elementType === "closing") {
+      if (openingStack.length > 0) {
+        const lastOpening = openingStack[openingStack.length - 1];
+        if (lastOpening.tagName === element.tagName) {
+          openingStack.pop();
+        }
+      }
+    }
+  }
+
+  // Highlight all unclosed tags remaining in the stack
+  for (const unclosedElement of openingStack) {
+    highlightWarning(unclosedElement);
+  }
+}
 
 //missing parent
 function missingParent(docElements) {}
-
 //child in parent
 function missNexted(docElements) {}
-//mulptle single only elemtns
+//multiple single only elements
 function multipleBodies(docElements) {
   let count = 0;
   for (const tag of docElements) {
@@ -305,7 +324,11 @@ function multipleBodies(docElements) {
     }
   }
   if (count > 1) {
-    //highlight all bodies
+    for (const tag of docElements) {
+      if (tag.tagName === "body") {
+        highlightWarning(tag); // Highlight each body tag found
+      }
+    }
   }
 }
 
