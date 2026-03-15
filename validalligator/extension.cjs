@@ -1,5 +1,6 @@
 const {
   highlightWarning,
+  getErrors,
 } = require("./backend-functions/html-highlighter.cjs");
 const {
   takeNote,
@@ -178,6 +179,30 @@ class SidebarProvider {
       const html = marked(markdownText);
       this.updateContent(html);
     });
+  }
+
+  displayErrors() {
+    const errors = getErrors();
+
+    if (errors.length === 0) {
+      this.updateContent(
+        `<p style="color: var(--vscode-testing-message-error-decorationForeground);">✓ No errors found! Your HTML looks good.</p>`,
+      );
+      return;
+    }
+
+    let errorHTML = `<h3>🚨 Validation Issues (${errors.length})</h3>`;
+
+    errors.forEach((error, index) => {
+      errorHTML += `
+        <div style="border-left: 3px solid var(--vscode-symbolIcon-errorForeground); padding: 12px; margin: 8px 0; background-color: rgba(255, 0, 0, 0.1); border-radius: 3px;">
+          <p><strong>Line ${error.lineNumber}: ${error.title}</strong></p>
+          <p style="color: var(--vscode-editor-foreground); margin: 8px 0;">${error.message}</p>
+        </div>
+      `;
+    });
+
+    this.updateContent(errorHTML);
   }
 
   async executeAnalysis() {
@@ -404,6 +429,10 @@ function activate(context) {
 
   vscode.workspace.onDidChangeTextDocument((event) => {
     validator.html_validator(event);
+    // Display validation errors in the sidebar
+    if (sidebarProvider) {
+      sidebarProvider.displayErrors();
+    }
   });
 }
 

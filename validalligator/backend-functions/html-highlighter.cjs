@@ -8,6 +8,7 @@ const highlightWarningStyle = vscode.window.createTextEditorDecorationType({
 });
 
 const warningLines = new Set();
+const { getAllErrors } = require("./error-storage.cjs");
 
 function highlightWarning(lineNum) {
   warningLines.add(lineNum);
@@ -31,7 +32,12 @@ function applyHighlights() {
   warningLines.clear();
 }
 
+function getErrors() {
+  return getAllErrors();
+}
+
 module.exports = {
   highlightWarning,
   applyHighlights,
+  getErrors,
 };
