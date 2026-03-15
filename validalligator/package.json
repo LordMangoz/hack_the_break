@@ -3,6 +3,7 @@
   "displayName": "ValidAlligator",
   "description": "An Html, css, and javascript validator for beginner, or intermediate web developers. All in VS Code! ",
   "version": "0.0.1",
+  "type": "module",
   "engines": {
     "vscode": "^1.110.0"
   },
@@ -10,11 +11,15 @@
     "Other"
   ],
   "activationEvents": [],
-  "main": "./extension.js",
+  "main": "./extension.cjs",
   "contributes": {
     "commands": [{
       "command": "validalligator.helloWorld",
       "title": "Hello World"
+    },
+    {
+      "command": "validalligator.highlightWarnings",
+      "title": "Hightlight Warnings"
     }]
   },
   "scripts": {
