@@ -49,8 +49,6 @@ const inlineElements = [
   "code",
 ];
 
-
-
 // need more conditionals for it running.
 function html_validator(event) {
   const editor = vscode.window.activeTextEditor; //could be not open ->
@@ -88,15 +86,12 @@ function looseText(text, docElements, document) {
 
   //loop for text
   for (const looseText of text.matchAll(looseRegex)) {
-    //for each "loose text" if between / on 
+    //for each "loose text" if between / on
 
     //if the index is between<longner paragrapth??> or on a line(<p>) where there is a valid tag, its good
-    //check if the thing is between or at the line number of elements that can contain text. 
-        if (document.positionAt(looseText.index) == ) 
-        {
-
-        }
-
+    //check if the thing is between or at the line number of elements that can contain text.
+    if (document.positionAt(looseText.index)) {
+    }
   }
 }
 
@@ -107,59 +102,73 @@ function containerDiv(text, document) {
 
 //make an list of tag objectsr
 function createElements(text, document) {
+  const parentStack = [];
   const elements = [];
   const elementRegex = /<\/?([a-zA-Z0-9]+)(?:\s[^>]*)?>/g;
 
   //do a for of [iterates thru values of an iterator]
   for (const element of text.matchAll(elementRegex)) {
+    const raw = element[0];
+    const tagName = element[1].toLowerCase();
+    const isClosing = raw.startsWith("</");
+
     const tag = {
       lineNumber: document.positionAt(element.index),
-      tagName: element[0],
-      containText : true,
+      tagName: tagName,
+      containText: false,
       elementType: "",
-      parent: "";
+      parent: null,
     };
-    setElementType(tag);
+
+    setElementType(tag, isClosing);
+    setParent(tag, isClosing, parentStack);
     setContainText(tag);
-    setParent(tag, elements[elements.length - 1])
     elements.push(tag);
   }
   return elements;
 }
-function setParent(tag, elements)
-{
+function setParent(tag, isClosing, parentStack) {
+  if (isClosing) {
+    parentStack.pop();
+    return;
+  }
 
-}
-function setContainText(tag) 
-{
-    if(textContain.includes(tag.containText))
-    {
-        tag.containText = true; 
-    }
-}
-function setElementType(tag)
-{
-    //belongs to vvoid or inline or closing, else open
-    // might need to trim the names but we will see.
-    if(voidElements.includes(tag.tagName))
-    {
-        tag.elementType = "void"; 
-    } else if(inlineElements.includes(tag.tagName))
-    {
-        tag.elementType = "inline"; 
-    } else if(tag.tagName.includes("</"))
-    {
-        tag.elementType = "closing"; 
-    } else {
-        tag.elementType = "open"; 
-    }
+  if (parentStack.length > 0) {
+    tag.parent = parentStack[parentStack.length - 1];
+  }
 
-    
+  if (!voidElements.includes(tag.tagName)) {
+    parentStack.push(tag);
+  }
 }
 
+function setContainText(tag) {
+  if (textContain.includes(tag.tagName)) {
+    tag.containText = true;
+  }
+}
+
+function setElementType(tag, isClosing) {
+  if (isClosing) {
+    tag.elementType = "closing";
+    return;
+  }
+
+  if (voidElements.includes(tag.tagName)) {
+    tag.elementType = "void";
+    return;
+  }
+
+  if (inlineElements.includes(tag.tagName)) {
+    tag.elementType = "inline";
+    return;
+  }
+
+  tag.elementType = "open";
+}
 //block inside inline
 function divInsideSpan() {
-    // if block opening inside a span.
+  // if block opening inside a span.
 }
 
 //might skip
