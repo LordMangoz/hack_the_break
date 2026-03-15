@@ -4,6 +4,10 @@ const path = require('path');
 
 let fileDirectory = null;
 
+let fileName = "notes";
+
+let extensionName = ".md";
+
 let hashtagHeader = '# ';
 
 /**
@@ -23,8 +27,7 @@ function takeNote(prompt)
         return -1;
     }
 
-
-    const toAppend = path.join(fileDirectory, "notes.md"); 
+    const toAppend = path.join(fileDirectory, fileName + extensionName); 
     let timestamp; 
 
     if (!fs.existsSync(toAppend) || fs.statSync(toAppend).size === 0) // 0 bytes
@@ -51,6 +54,7 @@ function takeNote(prompt)
             console.error("error", err);
         }
     }
+
 
 async function updateDirectory()
 {
@@ -94,19 +98,19 @@ async function headerSelector()
 
     switch (chosenInt)
     {
-        case 0: hashtagHeader = '# ';
+        case 0: hashtagHeader = '';
         break;
-        case 1: hashtagHeader = '## ';
+        case 1: hashtagHeader = '# ';
         break;
-        case 2: hashtagHeader = '### ';
+        case 2: hashtagHeader = '## ';
         break;
-        case 3: hashtagHeader = '#### ';
+        case 3: hashtagHeader = '### ';
         break;
-        case 4: hashtagHeader = '##### ';
+        case 4: hashtagHeader = '#### ';
         break;
-        case 5: hashtagHeader = '###### ';
+        case 5: hashtagHeader = '##### ';
         break;
-        case 6: hashtagHeader = '####### ';
+        case 6: hashtagHeader = '###### ';
         break;
     }
 

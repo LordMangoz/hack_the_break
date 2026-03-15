@@ -27,6 +27,17 @@ function highlightWarning(lineNum)
     editor.setDecorations(highlightWarningStyle, [lineToHighlight])
 }
 
+function clearWarningHighlights() {
+    const editor = vscode.window.activeTextEditor;
+
+    if (!editor) {
+        return;
+    }
+
+    // Passing an empty array clears all decorations associated with this style
+    editor.setDecorations(highlightWarningStyle, []);
+}
+
 module.exports =  {
     highlightWarning,
 };

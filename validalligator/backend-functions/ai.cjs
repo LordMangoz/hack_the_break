@@ -1,7 +1,6 @@
 const path = require("path");
-const dotenv = require("dotenv").config({ path: path.join(__dirname, "validalligator\.env") });
+const dotenv = require("dotenv").config({ path: path.join(__dirname, "../.env") });
 
-let generation;
 
 async function getAIResponse(prompt) {
     const { GoogleGenAI } = await import("@google/genai");
@@ -11,12 +10,10 @@ async function getAIResponse(prompt) {
         model: "gemini-2.5-flash",
         contents: prompt,
     });
-    generation = response.text;
 
-    return generation;
+    return response.text;
     
 }
 module.exports = {
     getAIResponse,
-    generation
 };

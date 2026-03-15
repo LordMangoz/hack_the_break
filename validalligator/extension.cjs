@@ -1,5 +1,4 @@
-// The module 'vscode' contains the VS Code extensibility API
-// Import the module and reference it with the alias vscode in your code below
+
 const { highlightWarning } = require('./backend-functions/html-highlighter.cjs');
 const {takeNote, updateDirectory, headerSelector } = require('./backend-functions/outputNote.cjs');
 
@@ -36,9 +35,6 @@ class SidebarProvider {
         this.isPaused = false;
         const textContent = `<h2>Resumed</h2><p>Session resumed!</p> \n <p>Here is some new content after resuming...</p>`;
         this.updateContent(textContent);
-      }
-      if (message.command === "analyze") {
-        this.executeAnalysis();
       }
     });
   }
@@ -177,28 +173,6 @@ class SidebarProvider {
       this.updateContent(html);
     });
   }
-
-  async executeAnalysis() {
-    const { getAIResponse } = require("./backend-functions/ai.cjs");
-    const selectedText = await vscode.window.activeTextEditor?.document.getText(
-      vscode.window.activeTextEditor?.selection,
-    );
-
-    if (!selectedText) {
-      this.updateContent(
-        `<p>No text selected. Please select some text to analyze.</p>`,
-      );
-      return;
-    }
-
-    this.updateContent(`<p>Analyzing...</p>`);
-
-    const analysis = await getAIResponse(
-      `Recommend any suggestions with coding examples:\n\n${selectedText}`,
-    );
-    this.updateContentWithMarkdown(analysis);
-	generatedPrompt = analysis;
-  }
 }
 
 
@@ -270,6 +244,7 @@ function activate(context) {
 
 				Fix only what is broken. Do not rewrite unrelated code. If multiple bugs exist, fix all in one block with a separate Issue: line for each.\n\n${selectedText}`,
       );
+      generatedPrompt = analysis;
       sidebarProvider.updateContentWithMarkdown(analysis);
     },
   );
@@ -312,6 +287,7 @@ function activate(context) {
 
 				Max 3 short paragraphs of prose. No extra headers or bullet lists.\n\n${selectedText}`,
       );
+      generatedPrompt = analysis;
       sidebarProvider.updateContentWithMarkdown(analysis);
     },
   );
@@ -344,6 +320,7 @@ function activate(context) {
       const analysis = await getAIResponse(
         `You are a refactoring assistant. Return only the refactored code in a single code block — nothing before or after it. Use short inline comments to mark what changed and why. Preserve the original logic and public API. Do not add new features or change behaviour.\n\n${selectedText}`,
       );
+      generatedPrompt = analysis;
       sidebarProvider.updateContentWithMarkdown(analysis);
     },
   );
@@ -352,13 +329,9 @@ function activate(context) {
 	// This line of code will only be executed once when your extension is activated
 	console.log('Congratulations, your extension "validalligator" is now active!');
 
-	// The command has been defined in the package.json file
-	// Now provide the implementation of the command with  registerCommand
-	// The commandId parameter must match the command field in package.json
-	const disposable = vscode.commands.registerCommand('validalligator.helloWorld', function () {
-		// The code you place here will be executed every time your command is executed
 
-		// Display a message box to the user
+	const disposable = vscode.commands.registerCommand('validalligator.helloWorld', function () {
+
 		vscode.window.showInformationMessage('Hello World from ValidAlligator!');
 	});
 
@@ -409,7 +382,6 @@ function activate(context) {
 
 }
 
-// This method is called when your extension is deactivated
 function deactivate() {}
 
 module.exports = {

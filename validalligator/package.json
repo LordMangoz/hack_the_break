@@ -22,6 +22,29 @@
         }
       ]
     },
+    "viewsWelcome": [
+      {
+        "view": "myVew",
+        "contents": "Welcome to ValidAlligator! This is a simple extension that will help you validate your HTML and give suggestions to help you along your way of learning web development."
+      }
+    ],
+    "views": {
+      "my-activitybar": [
+        {
+          "id": "myVew",
+          "name": "ValidAlligator toolbar",
+          "type": "webview"
+        }
+      ]
+    },
+    "menus": {
+      "view/title": [
+        {
+          "command": "validalligator.AItoggle",
+          "group": "navigation"
+        }
+      ]
+    },
     "commands": [
       {
         "command": "validalligator.helloWorld",
@@ -44,6 +67,10 @@
         "title": "Update number of hashtags headers for timestamps for note.md"
       },
       {
+        "command": "validalligator.AItoggle",
+        "title": "Toggle AI Suggestions"
+      },
+      {
         "command": "validalligator.suggestText",
         "title": "Suggestions"
       },
@@ -54,10 +81,6 @@
       {
         "command": "validalligator.refactorText",
         "title": "Refactor"
-      },
-      {
-        "command": "validalligator.refactorText",
-        "title": "Toggle AI Selector Tool"
       }
     ]
   },
