@@ -55,6 +55,46 @@ function takeNote(prompt)
         }
     }
 
+async function updateFileName()
+{
+    const fileNameOptions =
+    {
+        placeHolder: "Enter file name",
+
+        validateInput: (value) => {
+            const regex = /^[^\\/:*?"<>|.\s]+$/;
+            if (!regex.test(value)) {
+                return 'Invalid file name';  
+            }
+            return undefined;
+          }
+    }
+
+    fileName = await vscode.window.showInputBox(fileNameOptions);
+    vscode.window.showInformationMessage(`New file name set: ${fileName}` )
+}
+
+async function updateExtensionName()
+{
+    const extensionNameOptions =
+    {
+        placeHolder: "Enter file name",
+
+        validateInput: (value) => {
+            const regex = /^[a-z0-9]+$/;
+            if (!regex.test(value)) {
+                return 'Invalid file extension';  
+            }
+            return undefined;
+          }
+    }
+
+    extensionName = await vscode.window.showInputBox(extensionNameOptions);
+    vscode.window.showInformationMessage(`New extension name set: ${extensionName}` )
+}
+
+
+
 
 async function updateDirectory()
 {
@@ -120,6 +160,8 @@ async function headerSelector()
 module.exports =  {
     takeNote,
     updateDirectory,
-    headerSelector
+    headerSelector,
+    updateFileName,
+    updateExtensionName
 };
 

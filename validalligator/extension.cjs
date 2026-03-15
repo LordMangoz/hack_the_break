@@ -1,6 +1,7 @@
 
 const { highlightWarning } = require('./backend-functions/html-highlighter.cjs');
-const {takeNote, updateDirectory, headerSelector } = require('./backend-functions/outputNote.cjs');
+const {takeNote, updateDirectory, headerSelector, updateFileName, updateExtensionName } = require('./backend-functions/outputNote.cjs');
+const { setAPIKey } = require('./backend-functions/apiKeyChange.cjs');
 
 const vscode = require('vscode');
 
@@ -364,6 +365,18 @@ function activate(context) {
 
 	const hashtagHeaderSelect = vscode.commands.registerCommand("validalligator.headerSelector", function () {
 		headerSelector();
+})
+
+	const changeFileName = vscode.commands.registerCommand("validalligator.updateFileName", async function () {
+		await updateFileName();
+})
+
+	const changeExtensionName = vscode.commands.registerCommand("validalligator.updateExtensionName", async function () {
+		await updateExtensionName();
+})
+
+	const setAPI = vscode.commands.registerCommand("validalligator.setAPIKey", async function () {
+		await setAPIKey();
 })
 
 

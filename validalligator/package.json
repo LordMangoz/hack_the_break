@@ -81,6 +81,18 @@
       {
         "command": "validalligator.refactorText",
         "title": "Refactor"
+      },
+      {
+        "command": "validalligator.updateFileName",
+        "title": "Change File Name"
+      },
+      {
+        "command": "validalligator.updateExtensionName",
+        "title": "Change Extension Name"
+      },
+      {
+        "command": "validalligator.setAPIKey",
+        "title": "SET API KEY"
       }
     ]
   },
