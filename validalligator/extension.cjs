@@ -224,11 +224,6 @@ function activate(context) {
   let togglestate = false;
   const { getAIResponse } = require("./backend-functions/ai.cjs");
 
-  sidebarProvider = new SidebarProvider(context);
-  context.subscriptions.push(
-    vscode.window.registerWebviewViewProvider("myVew", sidebarProvider),
-  );
-
 const aiToggle = vscode.commands.registerCommand(
   "validalligator.AItoggle",
   function () {
@@ -243,7 +238,7 @@ const aiToggle = vscode.commands.registerCommand(
 
 sidebarProvider = new SidebarProvider(context);
 context.subscriptions.push(
-  vscode.window.registerWebviewViewProvider("myVew", sidebarProvider),
+  vscode.window.registerWebviewViewProvider("Views", sidebarProvider),
 );
 vscode.window.showInformationMessage("activated");
 
@@ -443,6 +438,13 @@ const refactorDisposable = vscode.commands.registerCommand( "validalligator.refa
     "validalligator.updateExtensionName",
     async function () {
       await updateExtensionName();
+    },
+  );
+
+  const setAPI = vscode.commands.registerCommand(
+    "validalligator.setAPIKey",
+    async function () {
+      await setAPIKey(context);
     },
   );
 

@@ -23,14 +23,14 @@
     },
     "viewsWelcome": [
       {
-        "view": "myVew",
+        "view": "Viewss",
         "contents": "Welcome to ValidAlligator! This is a simple extension that will help you validate your HTML and give suggestions to help you along your way of learning web development."
       }
     ],
     "views": {
       "my-activitybar": [
         {
-          "id": "myVew",
+          "id": "Views",
           "name": "ValidAlligator toolbar",
           "type": "webview"
         }
