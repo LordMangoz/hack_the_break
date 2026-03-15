@@ -11,11 +11,18 @@ let hashtagHeader = '# ';
  */
 function takeNote(prompt)
 {
+    if (prompt == undefined || prompt.length == 0)
+    {
+        console.error("Nothing to take note of");
+        return -2   ;
+    }
+
     if (fileDirectory == null)
     {
         console.error("Missing directory to save note.md");
         return -1;
     }
+
 
     const toAppend = path.join(fileDirectory, "notes.md"); 
     let timestamp; 

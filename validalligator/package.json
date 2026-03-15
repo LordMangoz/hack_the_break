@@ -13,26 +13,49 @@
   "activationEvents": [],
   "main": "./extension.cjs",
   "contributes": {
-    "commands": [{
-      "command": "validalligator.helloWorld",
-      "title": "Hello World"
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "my-activitybar",
+          "title": "ValidAlligator",
+          "icon": "media/aperture-svgrepo-com.svg"
+        }
+      ]
     },
-    {
-      "command": "validalligator.highlightWarnings",
-      "title": "Hightlight Warnings"
-    },
-    {
-     "command": "validalligator.updateDirectory",
-      "title": "Change note.md directory"
-    },
-    {
-      "command": "validalligator.testNote",
-      "title": "Take note"
-    },
-    {
-      "command": "validalligator.headerSelector",
-      "title": "Update number of hashtags headers for timestamps for note.md"
-  }]
+    "commands": [
+      {
+        "command": "validalligator.helloWorld",
+        "title": "Hello World"
+      },
+      {
+        "command": "validalligator.highlightWarnings",
+        "title": "Hightlight Warnings"
+      },
+      {
+        "command": "validalligator.updateDirectory",
+        "title": "Change note.md directory"
+      },
+      {
+        "command": "validalligator.testNote",
+        "title": "Take note"
+      },
+      {
+        "command": "validalligator.headerSelector",
+        "title": "Update number of hashtags headers for timestamps for note.md"
+      },
+      {
+        "command": "validalligator.suggestText",
+        "title": "Suggestions"
+      },
+      {
+        "command": "validalligator.debuggingText",
+        "title": "Debug"
+      },
+      {
+        "command": "validalligator.refactorText",
+        "title": "Refactor"
+      }
+    ]
   },
   "scripts": {
     "lint": "eslint .",
@@ -40,11 +63,16 @@
     "test": "vscode-test"
   },
   "devDependencies": {
-    "@types/vscode": "^1.110.0",
     "@types/mocha": "^10.0.10",
     "@types/node": "22.x",
-    "eslint": "^9.39.3",
+    "@types/vscode": "^1.110.0",
     "@vscode/test-cli": "^0.0.12",
-    "@vscode/test-electron": "^2.5.2"
+    "@vscode/test-electron": "^2.5.2",
+    "eslint": "^9.39.3"
+  },
+  "dependencies": {
+    "@google/genai": "^1.45.0",
+    "dotenv": "^17.3.1",
+    "marked": "^17.0.4"
   }
 }
