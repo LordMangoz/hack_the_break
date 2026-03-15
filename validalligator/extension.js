@@ -1,6 +1,7 @@
 const vscode = require("vscode");
 const validator = require("./backend-functions/validator");
 
+
 // This method is called when your extension is activated. Your extension is activated the very first time the command is executed
 
 let sidebarProvider;
@@ -202,18 +203,16 @@ class SidebarProvider {
 
 function activate(context) {
   console.log("ValidAlligator is now active!");
+  let togglestate = false;
   const { getAIResponse } = require("./ai");
 
-  async function main() {
-    const reply = await getAIResponse("Explain recursion in one sentence");
-    const aiChannel = vscode.window.createOutputChannel("AI Response");
-    aiChannel.appendLine(reply);
-    aiChannel.show();
-  }
-
   vscode.commands.registerCommand("validalligator.AItoggle", function () {
-    vscode.window.showInformationMessage("AI suggestions toggled!");
-    main();
+    togglestate = !togglestate;
+    if (togglestate) {
+      vscode.window.showInformationMessage("AI suggestions enabled!");
+    } else {
+      vscode.window.showInformationMessage("AI suggestions disabled!");
+    }
   });
   sidebarProvider = new SidebarProvider(context);
   context.subscriptions.push(
@@ -240,6 +239,10 @@ function activate(context) {
     async function () {
       if (sidebarProvider.isPaused) {
         vscode.window.showWarningMessage("Resume the session to use debugging");
+        return;
+      }
+      if (!togglestate) {
+        vscode.window.showWarningMessage("AI suggestions are disabled. Enable them to use debugging");
         return;
       }
       const selectedText = vscode.window.activeTextEditor?.document.getText(
@@ -269,9 +272,11 @@ function activate(context) {
     "validalligator.suggestText",
     async function () {
       if (sidebarProvider.isPaused) {
-        vscode.window.showWarningMessage(
-          "Resume the session to use suggestions",
-        );
+        vscode.window.showWarningMessage("Resume the session to use suggestions",);
+        return;
+      }
+      if (!togglestate) {
+        vscode.window.showWarningMessage("AI suggestions are disabled. Enable them to use debugging");
         return;
       }
       const selectedText = vscode.window.activeTextEditor?.document.getText(
@@ -305,9 +310,11 @@ function activate(context) {
     "validalligator.refactorText",
     async function () {
       if (sidebarProvider.isPaused) {
-        vscode.window.showWarningMessage(
-          "Resume the session to use refactoring",
-        );
+        vscode.window.showWarningMessage("Resume the session to use refactoring",);
+        return;
+      }
+      if (!togglestate) {
+        vscode.window.showWarningMessage("AI suggestions are disabled. Enable them to use refactoring");
         return;
       }
       const selectedText = vscode.window.activeTextEditor?.document.getText(
@@ -338,9 +345,10 @@ function activate(context) {
   validator.html_validator();
   vscode.workspace.onDidChangeTextDocument(() => {
     validator.html_validator();
+    vscode.workspace.onDidChangeTextDocument((event) => {
+      validator.html_validator(event);
+    });
   });
-
-  // context menu :for making the context menu work. have an option for activiate/deactive extention
 }
 
 // This method is called when your extension is deactivated

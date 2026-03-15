@@ -74,12 +74,11 @@ function validate(text, document) {
 }
 
 function looseText(text) {
- 
+  //if there is text not between elements.
 }
 
 //to check for container around something
 function containerDiv(text, document) {
-  
   return null;
 }
 
