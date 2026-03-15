@@ -79,6 +79,7 @@ function looseText(text) {
 
 //to check for container around something
 function containerDiv(text, document) {
+  
   return null;
 }
 
