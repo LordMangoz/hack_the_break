@@ -1,5 +1,13 @@
-const {highlightWarning,} = require("./backend-functions/html-highlighter.cjs");
-const {takeNote, updateDirectory, headerSelector} = require("./backend-functions/outputNote.cjs");
+const {
+  highlightWarning,
+  applyHighlights,
+  getErrors,
+} = require("./backend-functions/html-highlighter.cjs");
+const {
+  takeNote,
+  updateDirectory,
+  headerSelector,
+} = require("./backend-functions/outputNote.cjs");
 const validator = require("./backend-functions/validator");
 const vscode = require("vscode");
 
@@ -34,6 +42,15 @@ class SidebarProvider {
         this.isPaused = false;
         const textContent = `<h2>Resumed</h2><p>Session resumed!</p> \n <p>Here is some new content after resuming...</p>`;
         this.updateContent(textContent);
+      }
+      if (message.command === "gotoError") {
+        const editor = vscode.window.activeTextEditor;
+        if (editor && message.lineNumber) {
+          const line = message.lineNumber - 1;
+          const range = new vscode.Range(line, 0, line, 0);
+          editor.selection = new vscode.Selection(range.start, range.start);
+          editor.revealRange(range, vscode.TextEditorRevealType.InCenter);
+        }
       }
     });
   }
@@ -172,8 +189,32 @@ class SidebarProvider {
       this.updateContent(html);
     });
   }
-}
 
+  displayErrors() {
+    const errors = getErrors();
+
+    if (errors.length === 0) {
+      this.updateContent(
+        `<p style="color: var(--vscode-testing-message-error-decorationForeground);">✓ No errors found! Your HTML looks good.</p>`,
+      );
+      return;
+    }
+
+    let errorHTML = `<h3>🚨 Validation Issues (${errors.length})</h3>`;
+
+    errors.forEach((error, index) => {
+      errorHTML += `
+        <div style="border-left: 3px solid var(--vscode-symbolIcon-errorForeground); padding: 12px; margin: 8px 0; background-color: rgba(255, 0, 0, 0.1); border-radius: 3px; cursor: pointer;" onclick="vscode.postMessage({ command: 'gotoError', lineNumber: ${error.lineNumber} })">
+          <p><strong>Line ${error.lineNumber}: ${error.title}</strong></p>
+          <p style="color: var(--vscode-editor-foreground); margin: 8px 0;">${error.message}</p>
+          <p style="color: var(--vscode-descriptionForeground); font-size: 0.9em; margin: 4px 0;">Click to jump to line</p>
+        </div>
+      `;
+    });
+
+    this.updateContent(errorHTML);
+  }
+}
 
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
@@ -186,10 +227,10 @@ function activate(context) {
     'Congratulations, your extension "validalligator" is now active!',
   );
 
-	let togglestate = false;
-  	const { getAIResponse } = require("./backend-functions/ai.cjs");
+  let togglestate = false;
+  const { getAIResponse } = require("./backend-functions/ai.cjs");
 
-	const aiToggle = vscode.commands.registerCommand(
+  const aiToggle = vscode.commands.registerCommand(
     "validalligator.AItoggle",
     function () {
       togglestate = !togglestate;
@@ -206,13 +247,6 @@ function activate(context) {
     vscode.window.registerWebviewViewProvider("myVew", sidebarProvider),
   );
   vscode.window.showInformationMessage("activated");
-
-  const analyzeDisposable = vscode.commands.registerCommand(
-    "validalligator.analyzeText",
-    function () {
-      sidebarProvider.executeAnalysis();
-    },
-  );
 
   const debugDisposable = vscode.commands.registerCommand(
     "validalligator.debuggingText",
@@ -236,15 +270,7 @@ function activate(context) {
       }
       sidebarProvider.updateContent(`<p>Analyzing for debugging issues...</p>`);
       const analysis = await getAIResponse(
-        `You are a debugging assistant. Respond in this exact format:
-
-				**Issue:** [one sentence — what is wrong and why, under 20 words]
-
-				\`\`\`
-				[corrected code only — no explanations inside the block]
-				\`\`\`
-
-				Fix only what is broken. Do not rewrite unrelated code. If multiple bugs exist, fix all in one block with a separate Issue: line for each.\n\n${selectedText}`,
+        `You are a debugging assistant. Respond in this exact format:\n\n**Issue:** [one sentence — what is wrong and why, under 20 words]\n\n\`\`\`\n[corrected code only — no explanations inside the block]\n\`\`\`\n\nFix only what is broken. Do not rewrite unrelated code. If multiple bugs exist, fix all in one block with a separate Issue: line for each.\n\n${selectedText}`,
       );
       generatedPrompt = analysis;
       sidebarProvider.updateContentWithMarkdown(analysis);
@@ -262,7 +288,7 @@ function activate(context) {
       }
       if (!togglestate) {
         vscode.window.showWarningMessage(
-          "AI suggestions are disabled. Enable them to use debugging",
+          "AI suggestions are disabled. Enable them to use suggestions",
         );
         return;
       }
@@ -275,19 +301,7 @@ function activate(context) {
       }
       sidebarProvider.updateContent(`<p>Generating suggestions...</p>`);
       const analysis = await getAIResponse(
-        `You are a code mentor doing a quick code review. Respond in this exact format:
-
-				**What went wrong:** [1–2 sentences explaining the root cause simply]
-
-				**Why it matters:** [1 sentence on the consequence if left unfixed]
-
-				**How to fix it:** [short prose walkthrough — guide them, don't just hand them code]
-
-				\`\`\`
-				[minimal illustrative example under 20 lines]
-				\`\`\`
-
-				Max 3 short paragraphs of prose. No extra headers or bullet lists.\n\n${selectedText}`,
+        `You are a code mentor doing a quick code review. Respond in this exact format:\n\n**What went wrong:** [1–2 sentences explaining the root cause simply]\n\n**Why it matters:** [1 sentence on the consequence if left unfixed]\n\n**How to fix it:** [short prose walkthrough — guide them, don't just hand them code]\n\n\`\`\`\n[minimal illustrative example under 20 lines]\n\`\`\`\n\nMax 3 short paragraphs of prose. No extra headers or bullet lists.\n\n${selectedText}`,
       );
       generatedPrompt = analysis;
       sidebarProvider.updateContentWithMarkdown(analysis);
@@ -327,9 +341,11 @@ function activate(context) {
     },
   );
 
-	// Use the console to output diagnostic information (console.log) and errors (console.error)
-	// This line of code will only be executed once when your extension is activated
-	console.log('Congratulations, your extension "validalligator" is now active!');
+  // Use the console to output diagnostic information (console.log) and errors (console.error)
+  // This line of code will only be executed once when your extension is activated
+  console.log(
+    'Congratulations, your extension "validalligator" is now active!',
+  );
 
   // Original commands
   const disposable = vscode.commands.registerCommand(
@@ -361,38 +377,43 @@ function activate(context) {
     },
   );
 
-	const testNote = vscode.commands.registerCommand("validalligator.testNote", function () {
-		let temp = takeNote(generatedPrompt)
-		if (temp == -1)
-		{
-			vscode.window.showWarningMessage("Must choose a directory using the command: \"Change note.md Directory\"");
-		}
-
-		else if (temp == -2)
-		{
-			vscode.window.showWarningMessage("Note you are trying to take is nothing");
-		}
-
-		else
-		{
-			vscode.window.showInformationMessage('Note taken');		
-		}
-	})
-	context.subscriptions.push(
+  const testNote = vscode.commands.registerCommand(
+    "validalligator.testNote",
+    function () {
+      let temp = takeNote(generatedPrompt);
+      if (temp == -1) {
+        vscode.window.showWarningMessage(
+          'Must choose a directory using the command: "Change note.md Directory"',
+        );
+      } else if (temp == -2) {
+        vscode.window.showWarningMessage(
+          "Note you are trying to take is nothing",
+        );
+      } else {
+        vscode.window.showInformationMessage("Note taken");
+      }
+    },
+  );
+  context.subscriptions.push(
     disposable,
     highlightWarn,
     updateFolder,
     testNote,
     hashtagHeaderSelect,
     aiToggle,
-    analyzeDisposable,
     debugDisposable,
     suggestDisposable,
     refactorDisposable,
   );
 
   vscode.workspace.onDidChangeTextDocument((event) => {
-	validator.html_validator(event);
+    const editor = validator.html_validator(event);
+    if (editor) {
+      applyHighlights(editor);
+      if (sidebarProvider) {
+        sidebarProvider.displayErrors();
+      }
+    }
   });
 }
 function deactivate() {}
