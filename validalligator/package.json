@@ -55,14 +55,17 @@
         "title": "Toggle AI Suggestions"
       },
       {
-        "command": "validalligator.analyzeText",
-        "title": "Analyze Selected Text"
+        "command": "validalligator.suggestText",
+        "title": "Suggestions"
       },
       {
-        "command": "validalligator.highlightWarnings",
-        "title": "Highlight Warnings"
+        "command": "validalligator.debuggingText",
+        "title": "Debug"
+      },
+      {
+        "command": "validalligator.refactorText",
+        "title": "Refactor"
       }
-
     ]
   },
   "scripts": {

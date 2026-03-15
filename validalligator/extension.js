@@ -11,6 +11,7 @@ class SidebarProvider {
     this.context = context;
     this._onDidChange = new vscode.EventEmitter();
     this.onDidChange = this._onDidChange.event;
+    this.isPaused = true;
   }
 
   resolveWebviewView(webviewView) {
@@ -25,10 +26,12 @@ class SidebarProvider {
     // Listen for messages from the webview
     this.webview.onDidReceiveMessage((message) => {
       if (message.command === "pause") {
+        this.isPaused = true;
         const textContent = `<h2>Paused</h2><p>Session paused. Click continue to resume.</p>`;
         this.updateContent(textContent);
       }
       if (message.command === "continue") {
+        this.isPaused = false;
         const textContent = `<h2>Resumed</h2><p>Session resumed!</p> \n <p>Here is some new content after resuming...</p>`;
         this.updateContent(textContent);
       }
@@ -84,7 +87,6 @@ class SidebarProvider {
         </head>
         <body>
             <button id="startBtn"><img src="${startIconUri}" alt="Start"></button>
-            <button id="analyzeBtn">Analyze Text</button>
             <div id="content">
                 <p>Click the Start button to load content...</p>
             </div>
@@ -97,20 +99,10 @@ class SidebarProvider {
               startBtn.addEventListener('click', () => {
                   isPaused = !isPaused;
                   startBtn.innerHTML = isPaused ? \`<img src="${startIconUri}" alt="Start">\` : \`<img src="${pauseIconUri}" alt="Pause">\`;
-                  analyzeBtn.disabled = isPaused;
                   vscode.postMessage({ 
                       command: isPaused ? 'pause' : 'continue' 
                   });
-              });
-
-              analyzeBtn.addEventListener('click', () => {
-                  if (!isPaused) {
-                      vscode.postMessage({ command: 'analyze' });
-                  }
-              });
-
-              analyzeBtn.disabled = isPaused;
-
+              })
               // Listen for updates from extension
               window.addEventListener('message', (event) => {
                 const message = event.data;
@@ -148,8 +140,9 @@ class SidebarProvider {
 
     this.updateContent(`<p>Analyzing...</p>`);
 
+    // query
     const analysis = await getAIResponse(
-      `Analyze this code and provide suggestions:\n\n${selectedText}`,
+      `Recommend any suggestions with coding examples:\n\n${selectedText}`,
     );
     this.updateContent(`<h3>Analysis Results</h3><p>${analysis}</p>`);
   }
@@ -190,7 +183,109 @@ function activate(context) {
     },
   );
 
-  context.subscriptions.push(disposable, analyzeDisposable);
+  const debugDisposable = vscode.commands.registerCommand(
+    "validalligator.debuggingText",
+    async function () {
+      if (sidebarProvider.isPaused) {
+        vscode.window.showWarningMessage("Resume the session to use debugging");
+        return;
+      }
+      const selectedText = vscode.window.activeTextEditor?.document.getText(
+        vscode.window.activeTextEditor.selection,
+      );
+      if (!selectedText) {
+        vscode.window.showWarningMessage("Please select text to debug");
+        return;
+      }
+      sidebarProvider.updateContent(`<p>Analyzing for debugging issues...</p>`);
+      const analysis = await getAIResponse(
+        `You are a debugging assistant. Respond in this exact format:
+
+        **Issue:** [one sentence — what is wrong and why, under 20 words]
+
+        \`\`\`
+        [corrected code only — no explanations inside the block]
+        \`\`\`
+
+        Fix only what is broken. Do not rewrite unrelated code. If multiple bugs exist, fix all in one block with a separate Issue: line for each.\n\n${selectedText}`,
+      );
+      sidebarProvider.updateContent(
+        `<h3>Debugging Analysis</h3><p>${analysis}</p>`,
+      );
+    },
+  );
+
+  const suggestDisposable = vscode.commands.registerCommand(
+    "validalligator.suggestText",
+    async function () {
+      if (sidebarProvider.isPaused) {
+        vscode.window.showWarningMessage(
+          "Resume the session to use suggestions",
+        );
+        return;
+      }
+      const selectedText = vscode.window.activeTextEditor?.document.getText(
+        vscode.window.activeTextEditor.selection,
+      );
+      if (!selectedText) {
+        vscode.window.showWarningMessage("Please select text for suggestions");
+        return;
+      }
+      sidebarProvider.updateContent(`<p>Generating suggestions...</p>`);
+      const analysis = await getAIResponse(
+        `You are a code mentor doing a quick code review. Respond in this exact format:
+
+        **What went wrong:** [1–2 sentences explaining the root cause simply]
+
+        **Why it matters:** [1 sentence on the consequence if left unfixed]
+
+        **How to fix it:** [short prose walkthrough — guide them, don't just hand them code]
+
+        \`\`\`
+        [minimal illustrative example under 20 lines]
+        \`\`\`
+
+        Max 3 short paragraphs of prose. No extra headers or bullet lists.\n\n${selectedText}`,
+      );
+      sidebarProvider.updateContent(`<h3>Suggestions</h3><p>${analysis}</p>`);
+    },
+  );
+
+  const refactorDisposable = vscode.commands.registerCommand(
+    "validalligator.refactorText",
+    async function () {
+      if (sidebarProvider.isPaused) {
+        vscode.window.showWarningMessage(
+          "Resume the session to use refactoring",
+        );
+        return;
+      }
+      const selectedText = vscode.window.activeTextEditor?.document.getText(
+        vscode.window.activeTextEditor.selection,
+      );
+      if (!selectedText) {
+        vscode.window.showWarningMessage("Please select text to refactor");
+        return;
+      }
+      sidebarProvider.updateContent(
+        `<p>Analyzing for refactoring opportunities...</p>`,
+      );
+      const analysis = await getAIResponse(
+        `You are a refactoring assistant. Return only the refactored code in a single code block — nothing before or after it. Use short inline comments to mark what changed and why. Preserve the original logic and public API. Do not add new features or change behaviour.\n\n${selectedText}`,
+      );
+      sidebarProvider.updateContent(
+        `<h3>Refactoring Suggestions</h3><p>${analysis}</p>`,
+      );
+    },
+  );
+
+  context.subscriptions.push(
+    disposable,
+    analyzeDisposable,
+    debugDisposable,
+    suggestDisposable,
+    refactorDisposable,
+  );
   console.log("a");
   validator.html_validator();
   vscode.workspace.onDidChangeTextDocument(() => {
