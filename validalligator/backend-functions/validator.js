@@ -1,6 +1,5 @@
-
 const vscode = require("vscode");
-// for each item, we need to store the number and the line count
+const { highlightWarning } = require("./html-highlighter.cjs"); // gotta actaully implement these btw
 const containerElements = [
   "div",
   "section",
@@ -71,26 +70,20 @@ function validate(text, document) {
   const docElements = createElements(text, document);
   looseText(text, docElements, document);
   containerDiv(docElements, document);
-
+  highlightWarning(1);
   // parse and check for a test case (a form without whatever) / maybe just activate the highlight function.
   // parse through while checking for things in our list without a container div
 }
 
 function looseText(text, docElements, document) {
-  //if there is text not between elements in .
-  // const elementRegex = /<\/?([a-zA-Z0-9]+)(?:\s[^>]*)?>/g;
-
-  //maybe have to exclude if its between tags.
   const looseRegex = /([a-zA-Z0-9]+)/g;
-  //look for text. check if line number of text is between two existing line containing divs.
 
-  //loop for text
   for (const looseText of text.matchAll(looseRegex)) {
-    //for each "loose text" if between / on
-
-    //if the index is between<longner paragrapth??> or on a line(<p>) where there is a valid tag, its good
-    //check if the thing is between or at the line number of elements that can contain text.
     if (document.positionAt(looseText.index)) {
+      if (!looseText.parent.containText) {
+        //call highlighter.
+        highlightWarning(docElements[looseText.index]);
+      }
     }
   }
 }
@@ -207,7 +200,7 @@ function multipleBodies(docElements) {
   }
   if (count > 1) {
     //highlight all bodies
-  } 
+  }
 }
 
 //to check for duplicate id
