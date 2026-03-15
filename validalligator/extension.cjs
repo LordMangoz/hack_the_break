@@ -1,10 +1,15 @@
-
-const { highlightWarning, applyHighlights, getErrors } = require('./backend-functions/html-highlighter.cjs');
-const {takeNote, updateDirectory, headerSelector, updateFileName, updateExtensionName } = require('./backend-functions/outputNote.cjs');
-const { setAPIKey } = require('./backend-functions/apiKeyChange.cjs');
+const {
+  highlightWarning,
+  applyHighlights,
+  getErrors,
+} = require("./backend-functions/html-highlighter.cjs");
+const {
+  takeNote,
+  updateDirectory,
+  headerSelector,
+} = require("./backend-functions/outputNote.cjs");
 const validator = require("./backend-functions/validator");
-
-const vscode = require('vscode');
+const vscode = require("vscode");
 
 let generatedPrompt;
 
@@ -195,7 +200,7 @@ class SidebarProvider {
       return;
     }
 
-    let errorHTML = `<h3>🚨 Validation Issues (${errors.length})</h3>`;
+    let errorHTML = `<h3> Validation Issues (${errors.length})</h3>`;
 
     errors.forEach((error, index) => {
       errorHTML += `
@@ -358,47 +363,38 @@ function activate(context) {
     },
   );
 
+  const updateFolder = vscode.commands.registerCommand(
+    "validalligator.updateDirectory",
+    async () => {
+      await updateDirectory();
+    },
+  );
 
-	const updateFolder = vscode.commands.registerCommand("validalligator.updateDirectory", async () => {
-		await updateDirectory();
-	}	)
+  const hashtagHeaderSelect = vscode.commands.registerCommand(
+    "validalligator.headerSelector",
+    function () {
+      headerSelector();
+    },
+  );
 
-	const testNote = vscode.commands.registerCommand("validalligator.testNote", function () {
-		let temp = takeNote(generatedPrompt)
-		if (temp == -1)
-		{
-			vscode.window.showWarningMessage("Must choose a directory using the command: \"Change note.md Directory\"");
-		}
-
-		else if (temp == -2)
-		{
-			vscode.window.showWarningMessage("Note you are trying to take is nothing");
-		}
-
-		else
-		{
-			vscode.window.showInformationMessage('Note taken');		
-		}
-})
-
-	const hashtagHeaderSelect = vscode.commands.registerCommand("validalligator.headerSelector", function () {
-		headerSelector();
-})
-
-	const changeFileName = vscode.commands.registerCommand("validalligator.updateFileName", async function () {
-		await updateFileName();
-})
-
-	const changeExtensionName = vscode.commands.registerCommand("validalligator.updateExtensionName", async function () {
-		await updateExtensionName();
-})
-
-	const setAPI = vscode.commands.registerCommand("validalligator.setAPIKey", async function () {
-		await setAPIKey();
-})
-
-
-	context.subscriptions.push(
+  const testNote = vscode.commands.registerCommand(
+    "validalligator.testNote",
+    function () {
+      let temp = takeNote(generatedPrompt);
+      if (temp == -1) {
+        vscode.window.showWarningMessage(
+          'Must choose a directory using the command: "Change note.md Directory"',
+        );
+      } else if (temp == -2) {
+        vscode.window.showWarningMessage(
+          "Note you are trying to take is nothing",
+        );
+      } else {
+        vscode.window.showInformationMessage("Note taken");
+      }
+    },
+  );
+  context.subscriptions.push(
     disposable,
     highlightWarn,
     updateFolder,
