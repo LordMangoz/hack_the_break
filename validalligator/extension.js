@@ -194,11 +194,13 @@ function activate(context) {
   validator.html_validator();
   vscode.workspace.onDidChangeTextDocument(() => {
     validator.html_validator();
+  vscode.workspace.onDidChangeTextDocument((event) => {
+    // make the nvalidator work based on input command initally, run below line based on that
+    validator.html_validator(event);
   });
-
   // context menu :for making the context menu work. have an option for activiate/deactive extention
+  });
 }
-
 // This method is called when your extension is deactivated
 function deactivate() {}
 
