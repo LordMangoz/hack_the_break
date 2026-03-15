@@ -186,8 +186,16 @@ function setElementType(tag, isClosing) {
 }
 //block inside inline
 function divInsideSpan(docElements) {
-  // if()
-  // if block opening inside a span.
+  for (const element of docElements) {
+    // if current element is a block/container element
+    if (containerElements.includes(element.tagName)) {
+      // if parent is an inline element
+      if (element.parent && inlineElements.includes(element.parent.tagName)) {
+        // Block element found inside inline element violation
+        highlightWarning(element.PositionObject);
+      }
+    }
+  }
 }
 
 //might skip
@@ -203,12 +211,82 @@ function formWithoutSubmit(docElements) {
 // function mismatchClosingString() {}
 
 //attribute without a value
-function attributeWithoutValue(docElements) {}
+function attributeWithoutValue(docElements) {
+  // Regex to find attributes without values: space + word chars not followed by =
+  const attrWithoutValueRegex = /\s(\w+)(?!\s*=)(?:\s|>|\/?>)/g;
+
+  for (const element of docElements) {
+    if (element.elementType === "closing") continue;
+
+    let match;
+    while ((match = attrWithoutValueRegex.exec(element.raw)) !== null) {
+      // Skip if it's a void element closing or at end of tag
+      if (match[0].trim() === ">" || match[0].trim() === "/>") {
+        continue;
+      }
+      // Highlight elements with valueless attributes
+      highlightWarning(element.PositionObject);
+      break; // Only need to highlight once per element
+    }
+  }
+}
 
 //lower priorty
-function duplicateAttributes(docElements) {}
+function duplicateAttributes(docElements) {
+  // Regex to find all attributes: word chars followed by optional =value
+  const attrRegex = /\b(\w+)(?:\s*=\s*["']?[^"'\s>]*["']?)?/g;
+  
+  for (const element of docElements) {
+    if (element.elementType === 'closing') continue;
+    
+    const seenAttributes = new Set();
+    let match;
+    
+    while ((match = attrRegex.exec(element.raw)) !== null) {
+      const attrName = match[1].toLowerCase();
+      
+      // Skip the tag name itself (first match)
+      if (match.index === 0 || attrName === element.tagName) continue;
+      
+      // Check if we've already seen this attribute
+      if (seenAttributes.has(attrName)) {
+        highlightWarning(element.PositionObject);
+        break; // Only need to highlight once per element
+      }
+      
+      seenAttributes.add(attrName);
+    }
+  }
+}
 
-function invalidChild(docElements) {}
+function invalidChild(docElements) {
+  // define rules for valid children per parent element
+  const childRules = {
+    ul: ["li"],
+    ol: ["li"],
+    table: ["tbody", "thead", "tfoot", "tr"],
+    tbody: ["tr"],
+    thead: ["tr"],
+    tfoot: ["tr"],
+    tr: ["td", "th"],
+  };
+
+  for (const element of docElements) {
+    if (childRules[element.tagName]) {
+      const validChildren = childRules[element.tagName];
+
+      // Check each child of this element
+      for (const child of docElements) {
+        if (child.parent === element) {
+          // If child is not in the valid children list, highlight it
+          if (!validChildren.includes(child.tagName)) {
+            highlightWarning(child.PositionObject);
+          }
+        }
+      }
+    }
+  }
+}
 
 // unclosed tag
 function unclosedTag(docElements) {}
