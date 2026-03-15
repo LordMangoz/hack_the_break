@@ -52,7 +52,12 @@
       {
         "command": "validalligator.AItoggle",
         "title": "Toggle AI Suggestions"
+      },
+      {
+        "command": "validalligator.analyzeText",
+        "title": "Analyze Selected Text"
       }
+
     ]
   },
   "scripts": {
