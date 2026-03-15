@@ -71,8 +71,6 @@ function validate(text, document) {
   clearErrors();
   const docElements = createElements(text, document);
 
-  highlightWarning(1);
-
   // All the validators below
   divInsideSpan(docElements);
   //   looseText(text, docElements, document);
@@ -260,42 +258,29 @@ function attributeWithoutValue(docElements) {
   }
 }
 
-//lower priorty
 function duplicateAttributes(docElements) {
-  // Regex to find all attributes: word chars followed by optional =value
-  const attrRegex = /\b(\w+)(?:\s*=\s*["']?[^"'\s>]*["']?)?/g;
+  const attrRegex = /\s(\w+)(?=\s*=)/g;
 
   for (const element of docElements) {
     if (element.elementType === "closing") continue;
 
-    const seenAttributes = new Set();
+    const seen = new Set();
     let match;
 
     while ((match = attrRegex.exec(element.raw)) !== null) {
-      const attrName = match[1].toLowerCase();
+      const attr = match[1].toLowerCase();
 
-      // Skip the tag name itself (first match)
-      if (match.index === 0 || attrName === element.tagName) continue;
-
-      // Check if we've already seen this attribute
-      if (seenAttributes.has(attrName)) {
-        const lineNum = element.PositionObject.line + 1;
-        highlightWarning(lineNum);
-        addError(
-          lineNum,
-          "Duplicate attribute found",
-          `The attribute "${attrName}" appears more than once in the <${element.tagName}> tag. Each attribute should only be used once per element.`,
-        );
-        break; // Only need to highlight once per element
+      if (seen.has(attr)) {
+        highlightWarning(element.PositionObject.line + 1);
+        break;
       }
 
-      seenAttributes.add(attrName);
+      seen.add(attr);
     }
   }
 }
 
 function invalidChild(docElements) {
-  // define rules for valid children per parent element
   const childRules = {
     ul: ["li"],
     ol: ["li"],
@@ -306,25 +291,15 @@ function invalidChild(docElements) {
     tr: ["td", "th"],
   };
 
-  for (const element of docElements) {
-    if (childRules[element.tagName]) {
-      const validChildren = childRules[element.tagName];
+  for (const child of docElements) {
+    const parent = child.parent;
+    if (!parent) continue;
 
-      // Check each child of this element
-      for (const child of docElements) {
-        if (child.parent === element) {
-          // If child is not in the valid children list, highlight it
-          if (!validChildren.includes(child.tagName)) {
-            const lineNum = child.PositionObject.line + 1;
-            highlightWarning(lineNum);
-            addError(
-              lineNum,
-              "Invalid child element",
-              `The <${child.tagName}> tag is not a valid child of <${element.tagName}>. Valid children are: ${validChildren.map((t) => `<${t}>`).join(", ")}.`,
-            );
-          }
-        }
-      }
+    const rules = childRules[parent.tagName];
+    if (!rules) continue;
+
+    if (!rules.includes(child.tagName)) {
+      highlightWarning(child.PositionObject.line + 1);
     }
   }
 }
@@ -334,7 +309,7 @@ function unclosedTag(docElements) {
   const stack = [];
 
   for (const element of docElements) {
-    if (element.elementType === "open" || element.elementType === "inline") {
+    if (element.elementType !== "closing" && element.elementType !== "void") {
       stack.push(element);
       continue;
     }

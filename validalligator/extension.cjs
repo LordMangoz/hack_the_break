@@ -1,14 +1,9 @@
-const {
-  highlightWarning,
-  getErrors,
-} = require("./backend-functions/html-highlighter.cjs");
-const {
-  takeNote,
-  updateDirectory,
-  headerSelector,
-} = require("./backend-functions/outputNote.cjs");
+const {highlightWarning,} = require("./backend-functions/html-highlighter.cjs");
+const {takeNote, updateDirectory, headerSelector} = require("./backend-functions/outputNote.cjs");
 const validator = require("./backend-functions/validator");
 const vscode = require("vscode");
+
+let generatedPrompt;
 
 let sidebarProvider;
 
@@ -39,9 +34,6 @@ class SidebarProvider {
         this.isPaused = false;
         const textContent = `<h2>Resumed</h2><p>Session resumed!</p> \n <p>Here is some new content after resuming...</p>`;
         this.updateContent(textContent);
-      }
-      if (message.command === "analyze") {
-        this.executeAnalysis();
       }
     });
   }
@@ -180,106 +172,24 @@ class SidebarProvider {
       this.updateContent(html);
     });
   }
-
-  displayErrors() {
-    const errors = getErrors();
-
-    if (errors.length === 0) {
-      this.updateContent(
-        `<p style="color: var(--vscode-testing-message-error-decorationForeground);">✓ No errors found! Your HTML looks good.</p>`,
-      );
-      return;
-    }
-
-    let errorHTML = `<h3>🚨 Validation Issues (${errors.length})</h3>`;
-
-    errors.forEach((error, index) => {
-      errorHTML += `
-        <div style="border-left: 3px solid var(--vscode-symbolIcon-errorForeground); padding: 12px; margin: 8px 0; background-color: rgba(255, 0, 0, 0.1); border-radius: 3px;">
-          <p><strong>Line ${error.lineNumber}: ${error.title}</strong></p>
-          <p style="color: var(--vscode-editor-foreground); margin: 8px 0;">${error.message}</p>
-        </div>
-      `;
-    });
-
-    this.updateContent(errorHTML);
-  }
-
-  async executeAnalysis() {
-    const { getAIResponse } = require("./ai");
-    const selectedText = await vscode.window.activeTextEditor?.document.getText(
-      vscode.window.activeTextEditor?.selection,
-    );
-
-    if (!selectedText) {
-      this.updateContent(
-        `<p>No text selected. Please select some text to analyze.</p>`,
-      );
-      return;
-    }
-
-    this.updateContent(`<p>Analyzing...</p>`);
-
-    const analysis = await getAIResponse(
-      `Recommend any suggestions with coding examples:\n\n${selectedText}`,
-    );
-    this.updateContentWithMarkdown(analysis);
-  }
 }
 
+
+// This method is called when your extension is activated
+// Your extension is activated the very first time the command is executed
+
+/**
+ * @param {vscode.ExtensionContext} context
+ */
 function activate(context) {
   console.log(
     'Congratulations, your extension "validalligator" is now active!',
   );
 
-  let togglestate = false;
-  const { getAIResponse } = require("./ai");
+	let togglestate = false;
+  	const { getAIResponse } = require("./backend-functions/ai.cjs");
 
-  // Original commands
-  const disposable = vscode.commands.registerCommand(
-    "validalligator.helloWorld",
-    function () {
-      vscode.window.showInformationMessage("Hello World from ValidAlligator!");
-    },
-  );
-
-  const highlightWarn = vscode.commands.registerCommand(
-    "validalligator.highlightWarnings",
-    function () {
-      highlightWarning(1);
-      vscode.window.showInformationMessage("Warnings are highlighted");
-    },
-  );
-
-  const updateFolder = vscode.commands.registerCommand(
-    "validalligator.updateDirectory",
-    async () => {
-      await updateDirectory();
-    },
-  );
-
-  const testNote = vscode.commands.registerCommand(
-    "validalligator.testNote",
-    function () {
-      if (takeNote("hello") == -1) {
-        vscode.window.showWarningMessage(
-          'Must choose a directory using the command: "Change note.md Directory"',
-        );
-      } else {
-        vscode.window.showInformationMessage("Note taken");
-      }
-    },
-  );
-
-  const hashtagHeaderSelect = vscode.commands.registerCommand(
-    "validalligator.headerSelector",
-    function () {
-      headerSelector();
-    },
-  );
-
-  // New commands from extension.js
-  const aiToggle = vscode.commands.registerCommand(
+	const aiToggle = vscode.commands.registerCommand(
     "validalligator.AItoggle",
     function () {
       togglestate = !togglestate;
@@ -336,6 +246,7 @@ function activate(context) {
 
 				Fix only what is broken. Do not rewrite unrelated code. If multiple bugs exist, fix all in one block with a separate Issue: line for each.\n\n${selectedText}`,
       );
+      generatedPrompt = analysis;
       sidebarProvider.updateContentWithMarkdown(analysis);
     },
   );
@@ -378,6 +289,7 @@ function activate(context) {
 
 				Max 3 short paragraphs of prose. No extra headers or bullet lists.\n\n${selectedText}`,
       );
+      generatedPrompt = analysis;
       sidebarProvider.updateContentWithMarkdown(analysis);
     },
   );
@@ -410,11 +322,63 @@ function activate(context) {
       const analysis = await getAIResponse(
         `You are a refactoring assistant. Return only the refactored code in a single code block — nothing before or after it. Use short inline comments to mark what changed and why. Preserve the original logic and public API. Do not add new features or change behaviour.\n\n${selectedText}`,
       );
+      generatedPrompt = analysis;
       sidebarProvider.updateContentWithMarkdown(analysis);
     },
   );
 
-  context.subscriptions.push(
+	// Use the console to output diagnostic information (console.log) and errors (console.error)
+	// This line of code will only be executed once when your extension is activated
+	console.log('Congratulations, your extension "validalligator" is now active!');
+
+  // Original commands
+  const disposable = vscode.commands.registerCommand(
+    "validalligator.helloWorld",
+    function () {
+      vscode.window.showInformationMessage("Hello World from ValidAlligator!");
+    },
+  );
+
+  const highlightWarn = vscode.commands.registerCommand(
+    "validalligator.highlightWarnings",
+    function () {
+      highlightWarning(1);
+      vscode.window.showInformationMessage("Warnings are highlighted");
+    },
+  );
+
+  const updateFolder = vscode.commands.registerCommand(
+    "validalligator.updateDirectory",
+    async () => {
+      await updateDirectory();
+    },
+  );
+
+  const hashtagHeaderSelect = vscode.commands.registerCommand(
+    "validalligator.headerSelector",
+    function () {
+      headerSelector();
+    },
+  );
+
+	const testNote = vscode.commands.registerCommand("validalligator.testNote", function () {
+		let temp = takeNote(generatedPrompt)
+		if (temp == -1)
+		{
+			vscode.window.showWarningMessage("Must choose a directory using the command: \"Change note.md Directory\"");
+		}
+
+		else if (temp == -2)
+		{
+			vscode.window.showWarningMessage("Note you are trying to take is nothing");
+		}
+
+		else
+		{
+			vscode.window.showInformationMessage('Note taken');		
+		}
+	})
+	context.subscriptions.push(
     disposable,
     highlightWarn,
     updateFolder,
@@ -428,14 +392,9 @@ function activate(context) {
   );
 
   vscode.workspace.onDidChangeTextDocument((event) => {
-    validator.html_validator(event);
-    // Display validation errors in the sidebar
-    if (sidebarProvider) {
-      sidebarProvider.displayErrors();
-    }
+	validator.html_validator(event);
   });
 }
-
 function deactivate() {}
 
 module.exports = {

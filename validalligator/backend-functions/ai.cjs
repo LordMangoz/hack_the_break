@@ -1,5 +1,6 @@
 const path = require("path");
-require("dotenv").config({ path: path.join(__dirname, ".env") });
+const dotenv = require("dotenv").config({ path: path.join(__dirname, "../.env") });
+
 
 async function getAIResponse(prompt) {
     const { GoogleGenAI } = await import("@google/genai");
@@ -16,5 +17,3 @@ async function getAIResponse(prompt) {
 module.exports = {
     getAIResponse,
 };
-
-
