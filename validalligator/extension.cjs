@@ -1,10 +1,10 @@
 
-const { highlightWarning, applyHighlights, getErrors } = require('./backend-functions/html-highlighter.cjs');
+const { highlightWarning, applyHighlights, getErrors, clearHighlights} = require('./backend-functions/html-highlighter.cjs');
 const {takeNote, updateDirectory, headerSelector, updateFileName, updateExtensionName } = require('./backend-functions/outputNote.cjs');
 const { getAPIKey, setAPIKey } = require('./backend-functions/apiKeyChange.cjs');
 const validator = require("./backend-functions/validator");
 
-const vscode = require('vscode');
+const vscode = require("vscode");
 
 let generatedPrompt;
 
@@ -30,12 +30,14 @@ class SidebarProvider {
     this.webview.onDidReceiveMessage((message) => {
       if (message.command === "pause") {
         this.isPaused = true;
-        const textContent = `<h2>Paused</h2><p>Session paused. Click continue to resume.</p>`;
+        const textContent = `<h2>Paused</h2><p> Session paused. Click continue to resume.</p>`;
+        clearHighlights();
+
         this.updateContent(textContent);
       }
       if (message.command === "continue") {
         this.isPaused = false;
-        const textContent = `<h2>Resumed</h2><p>Session resumed!</p> \n <p>Here is some new content after resuming...</p>`;
+        const textContent = `<h2>Resumed</h2><p>Session Live!</p> \n <p>Loading Suggestions...</p>`;
         this.updateContent(textContent);
       }
       if (message.command === "gotoError") {
@@ -64,7 +66,7 @@ class SidebarProvider {
             <meta charset="UTF-8">
             <title>ValidAlligator</title>
             <style>
-                body {
+body {
                     font-family: var(--vscode-font-family);
                     color: var(--vscode-foreground);
                     padding: 10px;
@@ -138,12 +140,13 @@ class SidebarProvider {
 					width: 16px;
 					height: 16px;
 				}
+            
             </style>
         </head>
         <body>
             <button id="startBtn"><img src="${startIconUri}" alt="Start"></button>
             <div id="content">
-                <p>Click the Start button to load content...</p>
+                <p>Edit the document to Start!</p>
             </div>
             <script>
               const vscode = acquireVsCodeApi();
@@ -218,14 +221,13 @@ class SidebarProvider {
  * @param {vscode.ExtensionContext} context
  */
 function activate(context) {
-  console.log(
-    'Congratulations, your extension "validalligator" is now active!',
+  let togglestate = false;
+  const { getAIResponse } = require("./backend-functions/ai.cjs");
+
+  sidebarProvider = new SidebarProvider(context);
+  context.subscriptions.push(
+    vscode.window.registerWebviewViewProvider("myVew", sidebarProvider),
   );
-
-let togglestate = false;
-
-const { getAIResponse } = require("./backend-functions/ai.cjs");
-
 
 const aiToggle = vscode.commands.registerCommand(
   "validalligator.AItoggle",
@@ -394,48 +396,57 @@ const refactorDisposable = vscode.commands.registerCommand( "validalligator.refa
     "validalligator.highlightWarnings",
     function () {
       highlightWarning(1);
-      vscode.window.showInformationMessage("Warnings are highlighted");
+      vscode.window.showInformationMessage("Suggestions are highlighted");
     },
   );
 
+  const updateFolder = vscode.commands.registerCommand(
+    "validalligator.updateDirectory",
+    async () => {
+      await updateDirectory();
+    },
+  );
 
-	const updateFolder = vscode.commands.registerCommand("validalligator.updateDirectory", async () => {
-		await updateDirectory();
-	}	)
+  const testNote = vscode.commands.registerCommand(
+    "validalligator.testNote",
+    function () {
+      let temp = takeNote(generatedPrompt);
+      if (temp == -1) {
+        vscode.window.showWarningMessage(
+          'Must choose a directory using the command: "Change note.md Directory"',
+        );
+      } else if (temp == -2) {
+        vscode.window.showWarningMessage(
+          "Note you are trying to take is nothing",
+        );
+      } else {
+        vscode.window.showInformationMessage("Note taken");
+      }
+    },
+  );
 
-	const testNote = vscode.commands.registerCommand("validalligator.testNote", function () {
-		let temp = takeNote(generatedPrompt)
-		if (temp == -1)
-		{
-			vscode.window.showWarningMessage("Must choose a directory using the command: \"Change note.md Directory\"");
-		}
+  const hashtagHeaderSelect = vscode.commands.registerCommand(
+    "validalligator.headerSelector",
+    function () {
+      headerSelector();
+    },
+  );
 
-		else if (temp == -2)
-		{
-			vscode.window.showWarningMessage("Note you are trying to take is nothing");
-		}
+  const changeFileName = vscode.commands.registerCommand(
+    "validalligator.updateFileName",
+    async function () {
+      await updateFileName();
+    },
+  );
 
-		else
-		{
-			vscode.window.showInformationMessage('Note taken');		
-		}
-})
+  const changeExtensionName = vscode.commands.registerCommand(
+    "validalligator.updateExtensionName",
+    async function () {
+      await updateExtensionName();
+    },
+  );
 
-	const hashtagHeaderSelect = vscode.commands.registerCommand("validalligator.headerSelector", function () {
-		headerSelector();
-})
-
-	const changeFileName = vscode.commands.registerCommand("validalligator.updateFileName", async function () {
-		await updateFileName();
-})
-
-	const changeExtensionName = vscode.commands.registerCommand("validalligator.updateExtensionName", async function () {
-		await updateExtensionName();
-})
-
-
-
-	context.subscriptions.push(
+  context.subscriptions.push(
     disposable,
     highlightWarn,
     updateFolder,

@@ -1,5 +1,4 @@
-const path = require("path");
-const dotenv = require("dotenv").config({ path: path.join(__dirname, "../.env") });
+
 const { getAPIKey } = require("./apiKeyChange.cjs");
 const vscode = require("vscode");
 
@@ -32,5 +31,5 @@ async function getAIResponse(context, prompt) {
     }
 }
 module.exports = {
-    getAIResponse,
+  getAIResponse,
 };

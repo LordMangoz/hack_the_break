@@ -81,7 +81,6 @@ function validate(text, document) {
   attributeWithoutValue(docElements);
   duplicateAttributes(docElements);
   invalidChild(docElements);
-  unclosedTag(docElements);
   multipleHeads(docElements);
   multipleBodies(docElements);
   missingParent(docElements);
@@ -315,61 +314,6 @@ function invalidChild(docElements) {
   }
 }
 
-// unclosed tag
-function unclosedTag(docElements) {
-  const stack = [];
-  const seenTags = new Map(); // Track tag positions
-
-  for (const element of docElements) {
-    if (element.elementType === "closing" || element.elementType === "void") {
-      if (element.elementType === "closing") {
-        if (stack.length === 0) {
-          const lineNum = element.PositionObject.line + 1;
-          highlightWarning(lineNum);
-          addError(
-            lineNum,
-            "Closing tag without opening tag",
-            `Found a closing </${element.tagName}> tag with no matching opening tag. Remove the closing tag or add an opening <${element.tagName}> tag.`,
-          );
-          continue;
-        }
-
-        const top = stack[stack.length - 1];
-        if (top.tagName === element.tagName) {
-          stack.pop();
-        } else {
-          const lineNum = element.PositionObject.line + 1;
-          highlightWarning(lineNum);
-          addError(
-            lineNum,
-            "Mismatched closing tag",
-            `The closing tag </${element.tagName}> does not match the most recent opening tag <${top.tagName}>. Check your tag nesting order.`,
-          );
-        }
-      }
-    } else {
-      // Opening or inline tag
-      const key = `${element.tagName}_${stack.length}`;
-      seenTags.set(key, element);
-      stack.push(element);
-    }
-  }
-
-  // Only flag unclosed tags for important structural elements
-  const importantTags = ["html", "body", "head", "form", "table", "ul", "ol"];
-  for (const remaining of stack) {
-    if (importantTags.includes(remaining.tagName)) {
-      const lineNum = remaining.PositionObject.line + 1;
-      highlightWarning(lineNum);
-      addError(
-        lineNum,
-        "Unclosed tag",
-        `The opening tag <${remaining.tagName}> is never closed. Add a closing </${remaining.tagName}> tag.`,
-      );
-    }
-  }
-}
-
 //missing parent
 function missingParent(_docElements) {}
 //child in parent
@@ -406,7 +350,7 @@ function multipleBodies(docElements) {
       count++;
     }
   }
-  if (count > 1) {
+  if (count > 2) {
     for (const tag of docElements) {
       if (tag.tagName === "body") {
         const lineNum = tag.PositionObject.line + 1;
@@ -414,7 +358,7 @@ function multipleBodies(docElements) {
         addError(
           lineNum,
           "Multiple body tags found",
-          `An HTML document should only have one <body> tag. Found ${count} body tags total. Remove the extra <body> tags and ensure all content is within a single <body>.`,
+          `An HTML document should only have one <body> element. Found ${count} body tags total. Remove the extra <body> tags and ensure all content is within a single <body>.`,
         );
       }
     }
