@@ -1,6 +1,5 @@
 const vscode = require("vscode");
 const validator = require("./backend-functions/validator");
-const { marked } = require("marked");
 
 // This method is called when your extension is activated. Your extension is activated the very first time the command is executed
 
@@ -172,8 +171,10 @@ class SidebarProvider {
   }
 
   updateContentWithMarkdown(markdownText) {
-    const html = marked(markdownText);
-    this.updateContent(html);
+    import("marked").then(({ marked }) => {
+      const html = marked(markdownText);
+      this.updateContent(html);
+    });
   }
 
   async executeAnalysis() {
