@@ -68,11 +68,22 @@ function html_validator(event) {
 function validate(text, document) {
   if (!text) return;
   const docElements = createElements(text, document);
+
+  highlightWarning(1);
+
+  // All the validators below
+  divInsideSpan(docElements);
   looseText(text, docElements, document);
   containerDiv(docElements, document);
-  highlightWarning(1);
-  // parse and check for a test case (a form without whatever) / maybe just activate the highlight function.
-  // parse through while checking for things in our list without a container div
+  formWithoutSubmit(docElements);
+  //   mismatchClosingString();
+  attributeWithoutValue(docElements);
+  duplicateAttributes(docElements);
+  invalidChild(docElements);
+  unclosedTag(docElements);
+  missingParent(docElements);
+  missNexted(docElements);
+  multipleBodies(docElements);
 }
 
 function looseText(text, docElements, document) {
@@ -90,14 +101,13 @@ function looseText(text, docElements, document) {
 
 //to check for container around something
 function containerDiv(docElements, document) {
-    for( const element of docElements )
-    {
-        if(element.type == "open"))
-        {
-
-        }
-        if(element.type == "void")
-    }
+  // for( const element of docElements )
+  // {
+  //     if(element.type == "open"))
+  //     {
+  //     }
+  //     if(element.type == "void")
+  // }
 }
 
 //make an list of tag objectsr
@@ -115,6 +125,7 @@ function createElements(text, document) {
     const tag = {
       PositionObject: document.positionAt(element.index),
       tagName: tagName,
+      raw: raw,
       containText: false,
       elementType: "",
       parent: null,
@@ -127,6 +138,7 @@ function createElements(text, document) {
   }
   return elements;
 }
+
 function setParent(tag, isClosing, parentStack) {
   if (isClosing) {
     if (parentStack.length === 0) return;
@@ -173,30 +185,38 @@ function setElementType(tag, isClosing) {
   tag.elementType = "open";
 }
 //block inside inline
-function divInsideSpan() {
+function divInsideSpan(docElements) {
+  // if()
   // if block opening inside a span.
 }
 
 //might skip
-function formWithoutSubmit() {}
+function formWithoutSubmit(docElements) {
+  for (const element of docElements) {
+    if (!(element.tagName == "form")) //contains form
+    {
+      return;
+    }
+  }
+}
 
-function mismatchClosingString() {}
+// function mismatchClosingString() {}
 
 //attribute without a value
-function attributeWithoutValue() {}
+function attributeWithoutValue(docElements) {}
 
 //lower priorty
-function duplicateAttributes() {}
+function duplicateAttributes(docElements) {}
 
-function invalidChild() {}
+function invalidChild(docElements) {}
 
 // unclosed tag
-function unclosedTag() {}
+function unclosedTag(docElements) {}
 
 //missing parten
-function missingParent() {}
+function missingParent(docElements) {}
 //child in partent
-function incorrectnexting() {}
+function missNexted(docElements) {}
 //mulptle single only elemtns
 function multipleBodies(docElements) {
   let count = 0;
