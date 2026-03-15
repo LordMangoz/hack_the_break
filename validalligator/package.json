@@ -50,6 +50,22 @@
         "title": "Hello World"
       },
       {
+        "command": "validalligator.highlightWarnings",
+        "title": "Hightlight Warnings"
+      },
+      {
+        "command": "validalligator.updateDirectory",
+        "title": "Change note.md directory"
+      },
+      {
+        "command": "validalligator.testNote",
+        "title": "Take note"
+      },
+      {
+        "command": "validalligator.headerSelector",
+        "title": "Update number of hashtags headers for timestamps for note.md"
+      },
+      {
         "command": "validalligator.AItoggle",
         "title": "Toggle AI Suggestions"
       },
@@ -92,7 +108,7 @@
     "@types/mocha": "^10.0.10",
     "@types/node": "22.x",
     "@types/vscode": "^1.110.0",
-    "@vscode/test-cli": "^0.0.11",
+    "@vscode/test-cli": "^0.0.12",
     "@vscode/test-electron": "^2.5.2",
     "eslint": "^9.39.3"
   },

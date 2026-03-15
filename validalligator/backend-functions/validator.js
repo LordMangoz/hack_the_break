@@ -69,8 +69,6 @@ function validate(text, document) {
   if (!text) return;
   const docElements = createElements(text, document);
 
-  highlightWarning(1);
-
   // All the validators below
   divInsideSpan(docElements);
   //   looseText(text, docElements, document);
@@ -253,36 +251,29 @@ function attributeWithoutValue(docElements) {
   }
 }
 
-//lower priorty
 function duplicateAttributes(docElements) {
-  // Regex to find all attributes: word chars followed by optional =value
-  const attrRegex = /\b(\w+)(?:\s*=\s*["']?[^"'\s>]*["']?)?/g;
+  const attrRegex = /\s(\w+)(?=\s*=)/g;
 
   for (const element of docElements) {
     if (element.elementType === "closing") continue;
 
-    const seenAttributes = new Set();
+    const seen = new Set();
     let match;
 
     while ((match = attrRegex.exec(element.raw)) !== null) {
-      const attrName = match[1].toLowerCase();
+      const attr = match[1].toLowerCase();
 
-      // Skip the tag name itself (first match)
-      if (match.index === 0 || attrName === element.tagName) continue;
-
-      // Check if we've already seen this attribute
-      if (seenAttributes.has(attrName)) {
+      if (seen.has(attr)) {
         highlightWarning(element.PositionObject.line + 1);
-        break; // Only need to highlight once per element
+        break;
       }
 
-      seenAttributes.add(attrName);
+      seen.add(attr);
     }
   }
 }
 
 function invalidChild(docElements) {
-  // define rules for valid children per parent element
   const childRules = {
     ul: ["li"],
     ol: ["li"],
@@ -293,19 +284,15 @@ function invalidChild(docElements) {
     tr: ["td", "th"],
   };
 
-  for (const element of docElements) {
-    if (childRules[element.tagName]) {
-      const validChildren = childRules[element.tagName];
+  for (const child of docElements) {
+    const parent = child.parent;
+    if (!parent) continue;
 
-      // Check each child of this element
-      for (const child of docElements) {
-        if (child.parent === element) {
-          // If child is not in the valid children list, highlight it
-          if (!validChildren.includes(child.tagName)) {
-            highlightWarning(child.PositionObject.line + 1);
-          }
-        }
-      }
+    const rules = childRules[parent.tagName];
+    if (!rules) continue;
+
+    if (!rules.includes(child.tagName)) {
+      highlightWarning(child.PositionObject.line + 1);
     }
   }
 }
@@ -315,7 +302,7 @@ function unclosedTag(docElements) {
   const stack = [];
 
   for (const element of docElements) {
-    if (element.elementType === "open" || element.elementType === "inline") {
+    if (element.elementType !== "closing" && element.elementType !== "void") {
       stack.push(element);
       continue;
     }
@@ -347,18 +334,17 @@ function missingParent(docElements) {}
 function missNexted(docElements) {}
 //multiple single only elements
 function multipleBodies(docElements) {
-  const bodyTags = [];
-  
+  let count = 0;
   for (const tag of docElements) {
-    if (tag.tagName === "body" && tag.elementType === "open") {
-      bodyTags.push(tag);
+    if (tag.tagName === "body") {
+      count++;
     }
   }
-  
-  // Highlight all duplicate opening body tags
-  if (bodyTags.length > 1) {
-    for (const tag of bodyTags) {
-      highlightWarning(tag);
+  if (count > 1) {
+    for (const tag of docElements) {
+      if (tag.tagName === "body") {
+        highlightWarning(tag.PositionObject.line + 1); // Highlight each body tag found
+      }
     }
   }
 }
