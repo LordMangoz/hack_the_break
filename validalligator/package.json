@@ -23,14 +23,14 @@
     },
     "viewsWelcome": [
       {
-        "view": "myVew",
+        "view": "Viewss",
         "contents": "Welcome to ValidAlligator! This is a simple extension that will help you validate your HTML and give suggestions to help you along your way of learning web development."
       }
     ],
     "views": {
       "my-activitybar": [
         {
-          "id": "myVew",
+          "id": "Views",
           "name": "ValidAlligator toolbar",
           "type": "webview"
         }
@@ -40,6 +40,12 @@
       "view/title": [
         {
           "command": "validalligator.AItoggle",
+          "group": "navigation"
+        }
+      ],
+      "editor/context": [
+        {
+          "command": "validalligator.highlightWarnings",
           "group": "navigation"
         }
       ]
@@ -55,7 +61,7 @@
       },
       {
         "command": "validalligator.updateDirectory",
-        "title": "Change note.md directory"
+        "title": "Change note directory"
       },
       {
         "command": "validalligator.testNote",
@@ -67,7 +73,7 @@
       },
       {
         "command": "validalligator.AItoggle",
-        "title": "Toggle AI Suggestions"
+        "title": "Toggle AI validalligator"
       },
       {
         "command": "validalligator.suggestText",
@@ -83,7 +89,7 @@
       },
       {
         "command": "validalligator.highlightWarnings",
-        "title": "Hightlight Warnings"
+        "title": "Validate Code"
       },
       {
         "command": "validalligator.updateDirectory",
@@ -120,7 +126,7 @@
     "@types/mocha": "^10.0.10",
     "@types/node": "22.x",
     "@types/vscode": "^1.110.0",
-    "@vscode/test-cli": "^0.0.12",
+    "@vscode/test-cli": "^0.0.11",
     "@vscode/test-electron": "^2.5.2",
     "eslint": "^9.39.3"
   },
